@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Remove any conflicting dark theme styles */
+:root {
+  background-color: white;
+} 
