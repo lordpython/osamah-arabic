@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --max-width: 1100px;
   --border-radius: 12px;
@@ -26,6 +30,10 @@
   --callout-border-rgb: 172, 175, 176;
   --card-rgb: 180, 185, 188;
   --card-border-rgb: 131, 134, 135;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: rgba(31, 38, 135, 0.37);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -72,6 +80,35 @@ a {
 
 @media (prefers-color-scheme: dark) {
   html {
-    color-scheme: dark;
+    color-scheme: white;
   }
+}
+
+.glass-effect {
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 var(--glass-shadow);
+}
+
+.neo-brutalism {
+  box-shadow: 
+    0.5rem 0.5rem #000,
+    -0.5rem -0.5rem rgba(255, 255, 255, 0.8);
+  transition: all 0.2s ease;
+}
+
+.neo-brutalism:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 
+    0.7rem 0.7rem #000,
+    -0.7rem -0.7rem rgba(255, 255, 255, 0.8);
+}
+
+.gradient-text {
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
