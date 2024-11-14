@@ -1,13 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { supabase, hrOperations, realtime } from '@/lib/supabase/config';
-import type { Attendance, EmployeeRecord } from '@/types/database';
+import { useEffect, useState } from 'react';
 
-type AttendanceStatus = 'present' | 'absent' | 'late' | 'leave' | 'holiday';
-
-type AttendanceInput = Omit<Attendance, 'attendance_id'>;
+import { hrOperations, realtime, supabase } from '@/lib/supabase/config';
+import type { AttendanceInput as AttendanceInputType, AttendanceStatus, EmployeeRecord } from '@/types/database';
 
 const MotionDiv = motion.div;
 
@@ -17,17 +14,17 @@ export default function AttendanceInput() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [success, setSuccess] = useState(false);
-  const [formData, setFormData] = useState<AttendanceInput>({
-    employee_id: '',
-    date: new Date().toISOString().split('T')[0],
-    check_in: new Date().toLocaleTimeString(),
-    check_out: '',
-    status: 'present'
+  const [formData, setFormData] = useState<AttendanceInputType>({
+    employee_id: 0,
+    date: new Date(),
+    status: 'present',
+    check_in_time: new Date(),
+    check_out_time: undefined,
   });
 
   useEffect(() => {
     fetchEmployees();
-    
+
     // Set up real-time subscription for attendance updates
     const subscription = realtime.subscribeToAttendance((payload) => {
       if (payload.eventType === 'INSERT') {
@@ -47,13 +44,13 @@ export default function AttendanceInput() {
         .from('employee_records')
         .select('*')
         .eq('status', 'active')
-        .order('full_name');
+        .order('employee_name');
 
       if (error) throw new Error(error.message);
 
       setEmployees(data || []);
       if (data && data.length > 0) {
-        setFormData(prev => ({ ...prev, employee_id: data[0].employee_id }));
+        setFormData((prev) => ({ ...prev, employee_id: data[0].id as number }));
       }
       setError(null);
     } catch (err) {
@@ -73,9 +70,9 @@ export default function AttendanceInput() {
     try {
       // Check if attendance record already exists
       const { data: existingRecord } = await hrOperations.getEmployeeAttendance(
-        formData.employee_id,
-        formData.date,
-        formData.date
+        String(formData.employee_id),
+        formData.date.toISOString().split('T')[0],
+        formData.date.toISOString().split('T')[0]
       );
 
       if (existingRecord && existingRecord.length > 0) {
@@ -88,11 +85,11 @@ export default function AttendanceInput() {
 
       setSuccess(true);
       // Reset form except for date
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        check_in: new Date().toLocaleTimeString(),
-        check_out: '',
-        status: 'present'
+        check_in_time: new Date(),
+        check_out_time: undefined,
+        status: 'present',
       }));
     } catch (err) {
       setError(err as Error);
@@ -102,9 +99,26 @@ export default function AttendanceInput() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      if (name === 'employee_id') {
+        return { ...prev, [name]: parseInt(value, 10) };
+      }
+      if (name === 'date') {
+        return { ...prev, [name]: new Date(value) };
+      }
+      if (name === 'check_in_time' || name === 'check_out_time') {
+        const [hours, minutes] = value.split(':');
+        const date = new Date(prev.date);
+        date.setHours(parseInt(hours, 10), parseInt(minutes, 10));
+        return { ...prev, [name]: date };
+      }
+      if (name === 'status') {
+        return { ...prev, [name]: value as AttendanceStatus };
+      }
+      return { ...prev, [name]: value };
+    });
     setSuccess(false);
   };
 
@@ -124,7 +138,7 @@ export default function AttendanceInput() {
       className="p-6 bg-white rounded-lg shadow-md"
     >
       <h2 className="text-xl font-semibold mb-4">Attendance Input</h2>
-      
+
       {error && (
         <div className="mb-4 p-4 bg-red-50 rounded-lg">
           <p className="text-red-700">{error.message}</p>
@@ -151,8 +165,8 @@ export default function AttendanceInput() {
             required
           >
             {employees.map((employee) => (
-              <option key={employee.employee_id} value={employee.employee_id}>
-                {employee.full_name} - {employee.department}
+              <option key={employee.id} value={employee.id}>
+                {employee.employee_name}
               </option>
             ))}
           </select>
@@ -166,9 +180,8 @@ export default function AttendanceInput() {
             type="date"
             id="date"
             name="date"
-            value={formData.date}
+            value={formData.date.toISOString().split('T')[0]}
             onChange={handleChange}
-            max={new Date().toISOString().split('T')[0]}
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             required
           />
@@ -176,14 +189,14 @@ export default function AttendanceInput() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="check_in">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="check_in_time">
               Check-in Time
             </label>
             <input
               type="time"
-              id="check_in"
-              name="check_in"
-              value={formData.check_in}
+              id="check_in_time"
+              name="check_in_time"
+              value={formData.check_in_time?.toTimeString().slice(0, 5)}
               onChange={handleChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               required
@@ -191,14 +204,14 @@ export default function AttendanceInput() {
           </div>
 
           <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="check_out">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="check_out_time">
               Check-out Time
             </label>
             <input
               type="time"
-              id="check_out"
-              name="check_out"
-              value={formData.check_out}
+              id="check_out_time"
+              name="check_out_time"
+              value={formData.check_out_time?.toTimeString().slice(0, 5) || ''}
               onChange={handleChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
@@ -219,9 +232,7 @@ export default function AttendanceInput() {
           >
             <option value="present">Present</option>
             <option value="absent">Absent</option>
-            <option value="late">Late</option>
-            <option value="leave">Leave</option>
-            <option value="holiday">Holiday</option>
+            <option value="on leave">On Leave</option>
           </select>
         </div>
 

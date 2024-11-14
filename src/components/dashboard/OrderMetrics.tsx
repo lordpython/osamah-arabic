@@ -1,15 +1,7 @@
 'use client';
+
 import { useEffect, useState } from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  CartesianGrid
-} from 'recharts';
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { supabase } from '@/lib/supabase/config';
 import { DailyOrderMetrics, MonthlyOrderMetrics } from '@/types/database';
@@ -66,14 +58,9 @@ export default function OrderMetrics() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={dailyMetrics}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="date" 
-                  tickFormatter={(date: string) => new Date(date).toLocaleDateString()} 
-                />
+                <XAxis dataKey="date" tickFormatter={(date: string) => new Date(date).toLocaleDateString()} />
                 <YAxis />
-                <Tooltip 
-                  labelFormatter={(date: string) => new Date(date).toLocaleDateString()} 
-                />
+                <Tooltip labelFormatter={(date: string) => new Date(date).toLocaleDateString()} />
                 <Legend />
                 <Line type="monotone" dataKey="total_orders" stroke="#4F46E5" name="Actual Orders" />
                 <Line
@@ -101,10 +88,7 @@ export default function OrderMetrics() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={monthlyMetrics}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="month" 
-                  tickFormatter={(month: string) => `${month}/${monthlyMetrics[0]?.year}`} 
-                />
+                <XAxis dataKey="month" tickFormatter={(month: string) => `${month}/${monthlyMetrics[0]?.year}`} />
                 <YAxis />
                 <Tooltip />
                 <Legend />

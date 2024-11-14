@@ -5,4 +5,4 @@ export default function AttendancePage() {
       {/* Add your page content here */}
     </div>
   );
-} 
+}

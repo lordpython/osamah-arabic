@@ -14,12 +14,6 @@ const data = [
   { name: 'يونيو', value: 900 },
 ];
 
-const performanceData = [
-  { name: 'الدخل', value: 84500 },
-  { name: 'المصروفات', value: 45000 },
-  { name: 'الأرباح', value: 39500 },
-];
-
 const ParticleBackground = () => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 

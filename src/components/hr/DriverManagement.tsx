@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { PostgrestError } from '@supabase/supabase-js';
 import { HTMLMotionProps, motion } from 'framer-motion';
-import { supabase, hrOperations } from '@/lib/supabase/config';
+import { useEffect, useState } from 'react';
+
+import { supabase } from '@/lib/supabase/config';
+
 import type { Driver } from '@/types/database';
 
 type DriverStatus = 'active' | 'inactive' | 'suspended';
@@ -26,7 +28,7 @@ const initialFormData: DriverFormData = {
   email: '',
   status: 'active',
   vehicle_type: vehicleTypes[0],
-  joining_date: new Date().toISOString().split('T')[0]
+  joining_date: new Date().toISOString().split('T')[0],
 };
 
 export default function DriverManagement() {
@@ -47,22 +49,17 @@ export default function DriverManagement() {
     // Set up real-time subscription for driver updates
     const subscription = supabase
       .channel('driver_changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'drivers' }, 
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setDrivers(current => [payload.new as Driver, ...current]);
-          } else if (payload.eventType === 'DELETE') {
-            setDrivers(current => current.filter(driver => driver.id !== payload.old.id));
-          } else if (payload.eventType === 'UPDATE') {
-            setDrivers(current =>
-              current.map(driver => 
-                driver.id === payload.new.id ? (payload.new as Driver) : driver
-              )
-            );
-          }
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'drivers' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setDrivers((current) => [payload.new as Driver, ...current]);
+        } else if (payload.eventType === 'DELETE') {
+          setDrivers((current) => current.filter((driver) => driver.id !== payload.old.id));
+        } else if (payload.eventType === 'UPDATE') {
+          setDrivers((current) =>
+            current.map((driver) => (driver.id === payload.new.id ? (payload.new as Driver) : driver))
+          );
         }
-      )
+      })
       .subscribe();
 
     return () => {
@@ -73,10 +70,7 @@ export default function DriverManagement() {
   async function fetchDrivers() {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('drivers')
-        .select('*')
-        .order('full_name');
+      const { data, error } = await supabase.from('drivers').select('*').order('full_name');
 
       if (error) throw error;
       setDrivers(data || []);
@@ -118,13 +112,13 @@ export default function DriverManagement() {
 
     setSubmitting(true);
     try {
-      const { error: insertError } = await supabase
-        .from('drivers')
-        .insert([{
+      const { error: insertError } = await supabase.from('drivers').insert([
+        {
           ...formData,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }]);
+          updated_at: new Date().toISOString(),
+        },
+      ]);
 
       if (insertError) throw insertError;
 
@@ -143,9 +137,9 @@ export default function DriverManagement() {
     try {
       const { error } = await supabase
         .from('drivers')
-        .update({ 
-          status: newStatus, 
-          updated_at: new Date().toISOString() 
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString(),
         })
         .eq('id', driverId);
 
@@ -160,9 +154,9 @@ export default function DriverManagement() {
     try {
       const { error } = await supabase
         .from('drivers')
-        .update({ 
-          status: newStatus, 
-          updated_at: new Date().toISOString() 
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString(),
         })
         .in('id', selectedDrivers);
 
@@ -181,10 +175,7 @@ export default function DriverManagement() {
   );
 
   const totalPages = Math.ceil(filteredDrivers.length / ITEMS_PER_PAGE);
-  const paginatedDrivers = filteredDrivers.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  const paginatedDrivers = filteredDrivers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const getStatusBadgeClass = (status: string) => {
     const baseClasses = 'px-2 py-1 text-xs font-medium rounded-full';
@@ -202,11 +193,7 @@ export default function DriverManagement() {
 
   if (loading) {
     return (
-      <MotionDiv 
-        initial={{ opacity: 0 }} 
-        animate={{ opacity: 1 }} 
-        className="flex items-center justify-center p-8"
-      >
+      <MotionDiv initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </MotionDiv>
     );
@@ -218,9 +205,7 @@ export default function DriverManagement() {
         <div className="sm:flex sm:items-center sm:justify-between">
           <div>
             <h3 className="text-lg font-medium leading-6 text-gray-900">Driver Management</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Manage your drivers, their status, and information.
-            </p>
+            <p className="mt-1 text-sm text-gray-500">Manage your drivers, their status, and information.</p>
           </div>
           <div className="mt-4 sm:mt-0 sm:flex-none">
             <button
@@ -260,9 +245,7 @@ export default function DriverManagement() {
                       formErrors.full_name ? 'border-red-300' : ''
                     }`}
                   />
-                  {formErrors.full_name && (
-                    <p className="mt-1 text-sm text-red-600">{formErrors.full_name}</p>
-                  )}
+                  {formErrors.full_name && <p className="mt-1 text-sm text-red-600">{formErrors.full_name}</p>}
                 </div>
 
                 <div>
@@ -279,9 +262,7 @@ export default function DriverManagement() {
                       formErrors.phone ? 'border-red-300' : ''
                     }`}
                   />
-                  {formErrors.phone && (
-                    <p className="mt-1 text-sm text-red-600">{formErrors.phone}</p>
-                  )}
+                  {formErrors.phone && <p className="mt-1 text-sm text-red-600">{formErrors.phone}</p>}
                 </div>
 
                 <div>
@@ -298,9 +279,7 @@ export default function DriverManagement() {
                       formErrors.email ? 'border-red-300' : ''
                     }`}
                   />
-                  {formErrors.email && (
-                    <p className="mt-1 text-sm text-red-600">{formErrors.email}</p>
-                  )}
+                  {formErrors.email && <p className="mt-1 text-sm text-red-600">{formErrors.email}</p>}
                 </div>
 
                 <div>
@@ -421,9 +400,7 @@ export default function DriverManagement() {
                             className="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6"
                             checked={selectedDrivers.length === paginatedDrivers.length}
                             onChange={(e) => {
-                              setSelectedDrivers(
-                                e.target.checked ? paginatedDrivers.map((d) => d.id) : []
-                              );
+                              setSelectedDrivers(e.target.checked ? paginatedDrivers.map((d) => d.id) : []);
                             }}
                           />
                         </th>
@@ -451,25 +428,16 @@ export default function DriverManagement() {
                               }}
                             />
                           </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                            {driver.full_name}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                            {driver.email}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                            {driver.vehicle_type}
-                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">{driver.full_name}</td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{driver.email}</td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{driver.vehicle_type}</td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm">
                             <span className={getStatusBadgeClass(driver.status)}>{driver.status}</span>
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                             <button
                               onClick={() =>
-                                handleStatusChange(
-                                  driver.id,
-                                  driver.status === 'active' ? 'inactive' : 'active'
-                                )
+                                handleStatusChange(driver.id, driver.status === 'active' ? 'inactive' : 'active')
                               }
                               className="text-indigo-600 hover:text-indigo-900 mr-3"
                             >
@@ -477,10 +445,7 @@ export default function DriverManagement() {
                             </button>
                             <button
                               onClick={() =>
-                                handleStatusChange(
-                                  driver.id,
-                                  driver.status === 'suspended' ? 'active' : 'suspended'
-                                )
+                                handleStatusChange(driver.id, driver.status === 'suspended' ? 'active' : 'suspended')
                               }
                               className="text-red-600 hover:text-red-900"
                             >
@@ -500,14 +465,8 @@ export default function DriverManagement() {
             <div className="mt-4 flex items-center justify-between">
               <div className="flex items-center">
                 <p className="text-sm text-gray-700">
-                  Showing{' '}
-                  <span className="font-medium">
-                    {(currentPage - 1) * ITEMS_PER_PAGE + 1}
-                  </span>{' '}
-                  to{' '}
-                  <span className="font-medium">
-                    {Math.min(currentPage * ITEMS_PER_PAGE, filteredDrivers.length)}
-                  </span>{' '}
+                  Showing <span className="font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to{' '}
+                  <span className="font-medium">{Math.min(currentPage * ITEMS_PER_PAGE, filteredDrivers.length)}</span>{' '}
                   of <span className="font-medium">{filteredDrivers.length}</span> drivers
                 </p>
               </div>

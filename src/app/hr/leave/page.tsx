@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 
-import { supabase } from '@/lib/supabase/config';
 import LeaveRequestForm from '@/components/hr/LeaveRequestForm';
+import { supabase } from '@/lib/supabase/config';
+
 import type { Employee } from '@/types/hr';
 
 export default function LeavePage() {
@@ -14,10 +15,7 @@ export default function LeavePage() {
   useEffect(() => {
     async function fetchEmployees() {
       try {
-        const { data, error } = await supabase
-          .from('employees')
-          .select('*')
-          .order('first_name');
+        const { data, error } = await supabase.from('employees').select('*').order('first_name');
 
         if (error) throw error;
         setEmployees(data || []);
@@ -53,4 +51,4 @@ export default function LeavePage() {
       <LeaveRequestForm employees={employees} />
     </div>
   );
-} 
+}

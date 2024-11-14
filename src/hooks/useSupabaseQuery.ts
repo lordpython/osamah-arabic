@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { PostgrestError } from '@supabase/supabase-js';
+import { useEffect, useState, useCallback } from 'react';
+
 import { supabase } from '@/lib/supabase/config';
 
 export function useSupabaseQuery<T>(
@@ -12,18 +13,18 @@ export function useSupabaseQuery<T>(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<PostgrestError | null>(null);
 
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await queryFn(supabase);
-      
+
       if (error) {
         setError(error);
         console.error(`Error fetching data from ${tableName}:`, {
           message: error.message,
           details: error.details,
           hint: error.hint,
-          code: error.code
+          code: error.code,
         });
         return;
       }
@@ -37,12 +38,12 @@ export function useSupabaseQuery<T>(
         message: pgError.message,
         details: pgError.details,
         hint: pgError.hint,
-        code: pgError.code
+        code: pgError.code,
       });
     } finally {
       setLoading(false);
     }
-  }
+  }, [queryFn, tableName]);
 
   useEffect(() => {
     fetchData();

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import { supabase } from '@/lib/supabase/config';
-import { NewAccountingEntry } from '@/types/accounting';
+import type { NewAccountingEntry } from '@/types/accounting';
 
 const categories = ['Sales', 'Services', 'Salary', 'Rent', 'Utilities', 'Office Supplies', 'Marketing', 'Other'];
 
@@ -22,7 +22,7 @@ export default function AccountingEntryForm() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.from('accounting_entries').insert([entry]).select();
+      const { error } = await supabase.from('accounting_entries').insert([entry]).select();
 
       if (error) throw error;
 

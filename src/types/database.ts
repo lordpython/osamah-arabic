@@ -1,7 +1,7 @@
 // PostgreSQL ENUM Types
 export type EmploymentStatus = 'active' | 'terminated' | 'on leave';
 export type ShiftType = 'day' | 'night' | 'other';
-export type ReimbursementStatus = 'reimbursed' | 'pending';
+export type ReimbursementStatus = 'reimbursed' | 'pending'; 
 export type DeductionFrequency = 'weekly' | 'monthly' | 'other';
 export type AttendanceStatus = 'present' | 'absent' | 'on leave';
 export type DeductionType = 'loan' | 'fine' | 'advance' | 'other';
@@ -9,7 +9,15 @@ export type BonusType = 'performance' | 'holiday' | 'other';
 export type CompletionStatus = 'completed' | 'in progress' | 'not started';
 export type PaymentMethod = 'cash' | 'bank' | 'other';
 export type PaymentStatus = 'pending' | 'completed' | 'cancelled';
-export type PaymentCategory = 'Salary' | 'Fuel' | 'Maintenance' | 'Insurance' | 'Office Supplies' | 'Utilities' | 'Rent' | 'Other';
+export type PaymentCategory =
+  | 'Salary'
+  | 'Fuel'
+  | 'Maintenance'
+  | 'Insurance'
+  | 'Office Supplies'
+  | 'Utilities'
+  | 'Rent'
+  | 'Other';
 
 // Form-specific types
 export interface AccountingEntryForm {
@@ -31,12 +39,42 @@ export interface AccountingEntry extends Omit<AccountingEntryForm, 'date'> {
 }
 
 // Legacy types for backward compatibility
-export interface Driver extends Employee {
-  // Additional driver-specific fields if needed
+export interface Driver {
+  id: string;
+  full_name: string;
+  phone: string;
+  email: string;
+  status: 'active' | 'inactive' | 'suspended' | 'on_leave';
+  vehicle_type: string;
+  joining_date: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface DriverDailyPerformance extends DailyRecord {
-  // Additional performance-specific fields if needed
+  rating_average?: number;
+  total_orders: number;
+}
+
+export interface DailyEntry {
+  entry_id: number;
+  statement_id: number;
+  day: number;
+  hours_worked: number;
+  status: AttendanceStatus;
+  notes?: string;
+}
+
+export interface DriverMonthlyStatement {
+  id: number;
+  driver_id: string;
+  month: number;
+  year: number;
+  total_days: number;
+  total_hours: number;
+  daily_entries: DailyEntry[];
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface EmployeeRecord {
@@ -275,4 +313,33 @@ export interface ProjectWithEmployees extends Project {
 
 export interface TrainingSessionWithEmployees extends TrainingSession {
   employees?: (EmployeeTraining & { employee: Employee })[];
+}
+
+export interface DailyOrderMetrics {
+  id: number;
+  date: string;
+  total_orders: number;
+  orders_target: number;
+  achieved_percentage: number;
+}
+
+export interface MonthlyOrderMetrics {
+  id: number;
+  year: number;
+  month: string;
+  total_orders: number;
+  orders_target: number;
+  achieved_percentage: number;
+}
+
+export interface DriverAttendanceStatement {
+  id: number;
+  driver_id: string;
+  date: Date;
+  check_in?: Date;
+  check_out?: Date;
+  status: AttendanceStatus;
+  notes?: string;
+  created_at: Date;
+  updated_at: Date;
 }

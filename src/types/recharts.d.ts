@@ -1,11 +1,4 @@
-import { 
-  BarProps, 
-  LineProps, 
-  AreaProps, 
-  PieProps, 
-  RadarProps,
-  ScatterProps
-} from 'recharts';
+import { AreaProps, BarProps, LineProps, PieProps, RadarProps, ScatterProps } from 'recharts';
 
 // Dashboard Chart Types
 export interface DashboardChartData {
@@ -160,4 +153,25 @@ export interface ChartAxis {
   domain?: [number | string, number | string];
   tickFormatter?: (value: any) => string;
   label?: string | object;
+}
+// Metrics Types for Supabase
+export interface DailyOrderMetrics {
+  date: string;
+  total_orders: number;
+  completed_orders: number;
+  cancelled_orders: number;
+  average_delivery_time: number;
+  satisfaction_rate: number;
+}
+
+export interface OrderMetricsMonthly {
+  month: string;
+  total_orders: number;
+  completed_orders: number;
+  cancelled_orders: number;
+  revenue: number;
+  growth_rate: number;
+  average_order_value: number;
+  average_delivery_time: number;
+  satisfaction_rate: number;
 }

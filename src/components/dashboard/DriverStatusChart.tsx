@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { supabase, dashboardCharts } from '@/lib/supabase/config';
+
+import { supabase } from '@/lib/supabase/config';
 import type { DashboardChartData } from '@/types/recharts';
 
-const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444'];
+const COLORS = ['#4F46E5', '#10B981', '#EF4444'];
 
 interface DriverStatusChartProps {
   darkMode?: boolean;
@@ -20,12 +21,9 @@ export default function DriverStatusChart({ darkMode = false }: DriverStatusChar
     // Set up real-time subscription
     const subscription = supabase
       .channel('driver_status_changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'drivers' }, 
-        () => {
-          fetchDriverStats(); // Refresh data on any changes
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'drivers' }, () => {
+        fetchDriverStats(); // Refresh data on any changes
+      })
       .subscribe();
 
     return () => {
@@ -35,17 +33,7 @@ export default function DriverStatusChart({ darkMode = false }: DriverStatusChar
 
   async function fetchDriverStats() {
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const { data: performanceData, error: performanceError } = await dashboardCharts.getDriverPerformanceData(today, today);
-
-      if (performanceError) {
-        console.error('Error fetching performance data:', performanceError);
-        return;
-      }
-
-      const { data: driversData, error: driversError } = await supabase
-        .from('drivers')
-        .select('status');
+      const { data: driversData, error: driversError } = await supabase.from('drivers').select('status');
 
       if (driversError) {
         console.error('Error fetching drivers:', driversError);
@@ -53,25 +41,20 @@ export default function DriverStatusChart({ darkMode = false }: DriverStatusChar
       }
 
       const stats: DashboardChartData[] = [
-        { 
-          name: 'Active', 
+        {
+          name: 'Active',
           value: driversData.filter((d) => d.status === 'active').length,
-          percentage: (driversData.filter((d) => d.status === 'active').length / driversData.length) * 100
+          percentage: (driversData.filter((d) => d.status === 'active').length / driversData.length) * 100,
         },
-        { 
-          name: 'On Leave', 
-          value: driversData.filter((d) => d.status === 'on_leave').length,
-          percentage: (driversData.filter((d) => d.status === 'on_leave').length / driversData.length) * 100
-        },
-        { 
-          name: 'Suspended', 
+        {
+          name: 'Suspended',
           value: driversData.filter((d) => d.status === 'suspended').length,
-          percentage: (driversData.filter((d) => d.status === 'suspended').length / driversData.length) * 100
+          percentage: (driversData.filter((d) => d.status === 'suspended').length / driversData.length) * 100,
         },
-        { 
-          name: 'Inactive', 
+        {
+          name: 'Inactive',
           value: driversData.filter((d) => d.status === 'inactive').length,
-          percentage: (driversData.filter((d) => d.status === 'inactive').length / driversData.length) * 100
+          percentage: (driversData.filter((d) => d.status === 'inactive').length / driversData.length) * 100,
         },
       ];
 
@@ -122,22 +105,20 @@ export default function DriverStatusChart({ darkMode = false }: DriverStatusChar
                   outerRadius={80}
                   paddingAngle={5}
                 >
-                  {driverStats.map((entry, index) => (
-                    <Cell 
-                      key={entry.name} 
+                  {driverStats.map((_, index) => (
+                    <Cell
+                      key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
                       className="transition-all duration-300 hover:opacity-80"
                     />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
-                <Legend 
-                  verticalAlign="bottom" 
+                <Legend
+                  verticalAlign="bottom"
                   height={36}
-                  formatter={(value, entry: any) => (
-                    <span className={darkMode ? 'text-white' : 'text-gray-900'}>
-                      {value}
-                    </span>
+                  formatter={(value) => (
+                    <span className={darkMode ? 'text-white' : 'text-gray-900'}>{value}</span>
                   )}
                 />
               </PieChart>

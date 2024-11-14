@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+
 import { collectRoutes } from '@/utils/routeCollector';
 
 export async function GET() {
@@ -8,4 +9,4 @@ export async function GET() {
 
   const routes = collectRoutes();
   return NextResponse.json(routes);
-} 
+}

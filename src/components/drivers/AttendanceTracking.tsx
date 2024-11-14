@@ -3,14 +3,22 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { supabase } from '@/lib/supabase/config';
-import { Driver, DriverAttendanceStatement } from '@/types/database';
+import type { AttendanceStatus, Driver } from '@/types/database';
+
+interface AttendanceStatement {
+  id: string;
+  driver_id: string;
+  date: string;
+  status: AttendanceStatus;
+  hours_worked: number;
+}
 
 export default function AttendanceTracking() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(true);
-  const [statements, setStatements] = useState<DriverAttendanceStatement[]>([]);
+  const [statements, setStatements] = useState<AttendanceStatement[]>([]);
 
   const daysInMonth = Array.from({ length: new Date(selectedYear, selectedMonth, 0).getDate() }, (_, i) => i + 1);
 
@@ -46,6 +54,32 @@ export default function AttendanceTracking() {
     fetchDrivers();
     fetchAttendanceStatements();
   }, [fetchDrivers, fetchAttendanceStatements]);
+
+  const getAttendanceStatus = (driverId: string, day: number) => {
+    const date = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return statements.find((s) => s.driver_id === driverId && s.date === date);
+  };
+
+  const getStatusColor = (status?: AttendanceStatus) => {
+    switch (status) {
+      case 'present':
+        return 'bg-green-100 text-green-800';
+      case 'absent':
+        return 'bg-red-100 text-red-800';
+      case 'on leave':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'text-gray-500';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -100,11 +134,17 @@ export default function AttendanceTracking() {
                 <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900 sticky left-0 bg-white">
                   {driver.full_name}
                 </td>
-                {daysInMonth.map((day) => (
-                  <td key={day} className="px-3 py-4 text-center text-sm text-gray-500">
-                    {/* Add attendance input/display here */}
-                  </td>
-                ))}
+                {daysInMonth.map((day) => {
+                  const attendance = getAttendanceStatus(driver.id, day);
+                  return (
+                    <td
+                      key={day}
+                      className={`px-3 py-4 text-center text-sm ${getStatusColor(attendance?.status)}`}
+                    >
+                      {attendance?.hours_worked || '-'}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

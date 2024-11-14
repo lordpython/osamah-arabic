@@ -1,11 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { DriverMonthlyStatement } from '@/types/database';
+import { supabase } from '@/lib/supabase/config';
+import type { AttendanceStatus } from '@/types/database';
+
+interface DailyRecord {
+  day: number;
+  hours_worked: number;
+  status: AttendanceStatus;
+}
+
+interface DriverStatement {
+  id: string;
+  driver_name: string;
+  daily_records: DailyRecord[];
+}
 
 export default function MonthlyStatement() {
-  const [statements, setStatements] = useState<DriverMonthlyStatement[]>([]);
+  const [statements, setStatements] = useState<DriverStatement[]>([]);
+
+  useEffect(() => {
+    const fetchStatements = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('driver_monthly_statements')
+          .select('*');
+        
+        if (error) throw error;
+        
+        if (data) {
+          setStatements(data as DriverStatement[]);
+        }
+      } catch (error) {
+        console.error('Error fetching monthly statements:', error);
+      }
+    };
+
+    fetchStatements();
+  }, []);
 
   // Generate array of days in a month (1-31)
   const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -16,7 +49,7 @@ export default function MonthlyStatement() {
         return 'text-green-600 bg-green-50';
       case 'absent':
         return 'text-red-600 bg-red-50';
-      case 'leave':
+      case 'on leave':
         return 'text-yellow-600 bg-yellow-50';
       case 'holiday':
         return 'text-blue-600 bg-blue-50';
@@ -51,7 +84,7 @@ export default function MonthlyStatement() {
               </td>
               {daysInMonth.map((day) => {
                 const dailyRecord = statement.daily_records.find(
-                  (record: { day: number; hours_worked: number; status: string }) => record.day === day
+                  (record) => record.day === day
                 );
 
                 return (

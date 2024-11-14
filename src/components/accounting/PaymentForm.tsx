@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+
 import { accountingOperations } from '@/lib/supabase/config';
-import type { AccountingEntryForm, PaymentMethod, PaymentCategory } from '@/types/database';
+import type { AccountingEntryForm, PaymentCategory, PaymentMethod } from '@/types/database';
 
 const paymentMethods: PaymentMethod[] = ['cash', 'bank', 'other'];
 const categories: PaymentCategory[] = [
@@ -14,7 +15,7 @@ const categories: PaymentCategory[] = [
   'Office Supplies',
   'Utilities',
   'Rent',
-  'Other'
+  'Other',
 ];
 
 const initialFormData: AccountingEntryForm = {
@@ -24,7 +25,7 @@ const initialFormData: AccountingEntryForm = {
   category: categories[0],
   description: '',
   payment_method: 'bank',
-  status: 'pending'
+  status: 'pending',
 };
 
 export default function PaymentForm() {
@@ -62,7 +63,13 @@ export default function PaymentForm() {
     setSuccess(false);
 
     try {
-      const { error: insertError } = await accountingOperations.addEntry(formData);
+      // Convert string date to Date object before submitting
+      const submissionData = {
+        ...formData,
+        date: new Date(formData.date),
+      };
+
+      const { error: insertError } = await accountingOperations.addEntry(submissionData);
 
       if (insertError) throw new Error(insertError.message);
 
@@ -84,14 +91,14 @@ export default function PaymentForm() {
     const { name, value, type } = e.target;
     setFormData((prev: AccountingEntryForm) => ({
       ...prev,
-      [name]: type === 'number' ? Number(value) : value
+      [name]: type === 'number' ? Number(value) : value,
     }));
-    
+
     // Clear validation error for the field being changed
     if (formErrors[name as keyof AccountingEntryForm]) {
-      setFormErrors(prev => ({
+      setFormErrors((prev) => ({
         ...prev,
-        [name]: undefined
+        [name]: undefined,
       }));
     }
   };
@@ -100,9 +107,7 @@ export default function PaymentForm() {
     <div className="bg-white shadow-sm rounded-lg p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-gray-900">New Payment</h2>
-        {loading && (
-          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
-        )}
+        {loading && <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>}
       </div>
 
       {error && (
@@ -148,9 +153,7 @@ export default function PaymentForm() {
                 step="0.01"
               />
             </div>
-            {formErrors.amount && (
-              <p className="mt-1 text-sm text-red-600">{formErrors.amount}</p>
-            )}
+            {formErrors.amount && <p className="mt-1 text-sm text-red-600">{formErrors.amount}</p>}
           </div>
 
           <div>
@@ -168,9 +171,7 @@ export default function PaymentForm() {
               } px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm`}
               required
             />
-            {formErrors.date && (
-              <p className="mt-1 text-sm text-red-600">{formErrors.date}</p>
-            )}
+            {formErrors.date && <p className="mt-1 text-sm text-red-600">{formErrors.date}</p>}
           </div>
 
           <div>
@@ -229,9 +230,7 @@ export default function PaymentForm() {
             } px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm`}
             required
           />
-          {formErrors.description && (
-            <p className="mt-1 text-sm text-red-600">{formErrors.description}</p>
-          )}
+          {formErrors.description && <p className="mt-1 text-sm text-red-600">{formErrors.description}</p>}
         </div>
 
         <div className="flex justify-end space-x-3">

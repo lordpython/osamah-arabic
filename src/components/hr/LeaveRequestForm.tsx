@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import { supabase } from '@/lib/supabase/config';
-import { Employee, NewLeaveRequest } from '@/types/hr';
+import type { Employee, NewLeaveRequest } from '@/types/hr';
 
 const leaveTypes = ['annual', 'sick', 'unpaid', 'other'] as const;
 
@@ -27,7 +27,7 @@ export default function LeaveRequestForm({ employees }: LeaveRequestFormProps) {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.from('leave_requests').insert([request]).select();
+      const { error } = await supabase.from('leave_requests').insert([request]).select();
 
       if (error) throw error;
 

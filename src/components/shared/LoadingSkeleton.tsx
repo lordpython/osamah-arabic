@@ -1,10 +1,5 @@
 export function LoadingSkeleton({ className = '' }: { className?: string }) {
-  return (
-    <div
-      className={`animate-pulse bg-gray-200 rounded-lg ${className}`}
-      style={{ animationDuration: '1.5s' }}
-    />
-  );
+  return <div className={`animate-pulse bg-gray-200 rounded-lg ${className}`} style={{ animationDuration: '1.5s' }} />;
 }
 
 export function ChartSkeleton() {

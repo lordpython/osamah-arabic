@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { supabase } from '@/lib/supabase/config';
@@ -21,11 +21,7 @@ export default function FinancialSummary({ darkMode = false }: FinancialSummaryP
   const [financialData, setFinancialData] = useState<MonthlyFinancialData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchFinancialData();
-  }, []);
-
-  async function fetchFinancialData() {
+  const fetchFinancialData = useCallback(async () => {
     try {
       const startDate = new Date();
       startDate.setMonth(startDate.getMonth() - 6);
@@ -56,7 +52,11 @@ export default function FinancialSummary({ darkMode = false }: FinancialSummaryP
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchFinancialData();
+  }, [fetchFinancialData]);
 
   function processMonthlyData(data: AccountingEntry[]): MonthlyFinancialData[] {
     const monthlyAggregates = data.reduce((acc: Record<string, MonthlyFinancialData>, entry) => {
@@ -74,9 +74,9 @@ export default function FinancialSummary({ darkMode = false }: FinancialSummaryP
         };
       }
 
-      if (entry.type === 'income') {
+      if (entry.type === 'receipt') {
         acc[monthYear].income += entry.amount;
-      } else if (entry.type === 'expense') {
+      } else if (entry.type === 'payment') {
         acc[monthYear].expenses += entry.amount;
       }
 

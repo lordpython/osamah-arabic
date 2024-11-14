@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { supabase, hrOperations } from '@/lib/supabase/config';
-import type { DriverMonthlyStatement, DailyAttendanceRecord } from '@/types/database';
+import { useCallback, useEffect, useState } from 'react';
+
+import { supabase } from '@/lib/supabase/config';
 
 interface MonthlyStats {
   daysWorked: number;
@@ -27,16 +27,12 @@ export default function MonthlyStatementSummary({ driverId, month, year }: Props
     attendanceRate: 0,
     averageHours: 0,
     onTimeRate: 0,
-    lateCount: 0
+    lateCount: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchMonthlyStats();
-  }, [driverId, month, year]);
-
-  const fetchMonthlyStats = async () => {
+  const fetchMonthlyStats = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -62,7 +58,7 @@ export default function MonthlyStatementSummary({ driverId, month, year }: Props
       }
 
       // Calculate statistics
-      const daysWorked = attendanceData.filter(record => record.status === 'present').length;
+      const daysWorked = attendanceData.filter((record) => record.status === 'present').length;
       const totalHours = attendanceData.reduce((sum, record) => {
         if (record.check_in && record.check_out) {
           const checkIn = new Date(`${record.date}T${record.check_in}`);
@@ -72,7 +68,7 @@ export default function MonthlyStatementSummary({ driverId, month, year }: Props
         return sum;
       }, 0);
 
-      const lateCount = attendanceData.filter(record => record.status === 'late').length;
+      const lateCount = attendanceData.filter((record) => record.status === 'late').length;
       const presentAndLateCount = daysWorked + lateCount;
 
       setStats({
@@ -81,16 +77,19 @@ export default function MonthlyStatementSummary({ driverId, month, year }: Props
         attendanceRate: Math.round((presentAndLateCount / totalDaysInMonth) * 100),
         averageHours: presentAndLateCount ? Math.round((totalHours / presentAndLateCount) * 10) / 10 : 0,
         onTimeRate: presentAndLateCount ? Math.round((daysWorked / presentAndLateCount) * 100) : 0,
-        lateCount
+        lateCount,
       });
-
     } catch (err) {
       console.error('Error fetching monthly stats:', err);
       setError(err instanceof Error ? err.message : 'Error fetching monthly statistics');
     } finally {
       setLoading(false);
     }
-  };
+  }, [driverId, month, year]);
+
+  useEffect(() => {
+    fetchMonthlyStats();
+  }, [fetchMonthlyStats]);
 
   if (loading) {
     return (
@@ -128,11 +127,15 @@ export default function MonthlyStatementSummary({ driverId, month, year }: Props
 
         <div className="bg-white rounded-lg shadow p-4">
           <h3 className="text-sm font-medium text-gray-500">Attendance Rate</h3>
-          <p className={`mt-2 text-xl font-semibold ${
-            stats.attendanceRate >= 90 ? 'text-green-600' : 
-            stats.attendanceRate >= 80 ? 'text-yellow-600' : 
-            'text-red-600'
-          }`}>
+          <p
+            className={`mt-2 text-xl font-semibold ${
+              stats.attendanceRate >= 90
+                ? 'text-green-600'
+                : stats.attendanceRate >= 80
+                  ? 'text-yellow-600'
+                  : 'text-red-600'
+            }`}
+          >
             {stats.attendanceRate}%
           </p>
         </div>
@@ -144,22 +147,22 @@ export default function MonthlyStatementSummary({ driverId, month, year }: Props
 
         <div className="bg-white rounded-lg shadow p-4">
           <h3 className="text-sm font-medium text-gray-500">On-Time Rate</h3>
-          <p className={`mt-2 text-xl font-semibold ${
-            stats.onTimeRate >= 90 ? 'text-green-600' : 
-            stats.onTimeRate >= 80 ? 'text-yellow-600' : 
-            'text-red-600'
-          }`}>
+          <p
+            className={`mt-2 text-xl font-semibold ${
+              stats.onTimeRate >= 90 ? 'text-green-600' : stats.onTimeRate >= 80 ? 'text-yellow-600' : 'text-red-600'
+            }`}
+          >
             {stats.onTimeRate}%
           </p>
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">
           <h3 className="text-sm font-medium text-gray-500">Late Count</h3>
-          <p className={`mt-2 text-xl font-semibold ${
-            stats.lateCount <= 2 ? 'text-green-600' : 
-            stats.lateCount <= 4 ? 'text-yellow-600' : 
-            'text-red-600'
-          }`}>
+          <p
+            className={`mt-2 text-xl font-semibold ${
+              stats.lateCount <= 2 ? 'text-green-600' : stats.lateCount <= 4 ? 'text-yellow-600' : 'text-red-600'
+            }`}
+          >
             {stats.lateCount}
           </p>
         </div>
@@ -174,11 +177,13 @@ export default function MonthlyStatementSummary({ driverId, month, year }: Props
               <span className="font-medium">95%</span>
             </div>
             <div className="mt-2 h-2 bg-gray-200 rounded-full">
-              <div 
+              <div
                 className={`h-2 rounded-full ${
-                  stats.attendanceRate >= 95 ? 'bg-green-500' :
-                  stats.attendanceRate >= 85 ? 'bg-yellow-500' :
-                  'bg-red-500'
+                  stats.attendanceRate >= 95
+                    ? 'bg-green-500'
+                    : stats.attendanceRate >= 85
+                      ? 'bg-yellow-500'
+                      : 'bg-red-500'
                 }`}
                 style={{ width: `${Math.min(stats.attendanceRate, 100)}%` }}
               />
@@ -190,11 +195,9 @@ export default function MonthlyStatementSummary({ driverId, month, year }: Props
               <span className="font-medium">90%</span>
             </div>
             <div className="mt-2 h-2 bg-gray-200 rounded-full">
-              <div 
+              <div
                 className={`h-2 rounded-full ${
-                  stats.onTimeRate >= 90 ? 'bg-green-500' :
-                  stats.onTimeRate >= 80 ? 'bg-yellow-500' :
-                  'bg-red-500'
+                  stats.onTimeRate >= 90 ? 'bg-green-500' : stats.onTimeRate >= 80 ? 'bg-yellow-500' : 'bg-red-500'
                 }`}
                 style={{ width: `${Math.min(stats.onTimeRate, 100)}%` }}
               />

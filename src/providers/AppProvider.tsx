@@ -4,9 +4,9 @@ import { PostgrestError, RealtimeChannel } from '@supabase/supabase-js';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import { supabase } from '@/lib/supabase/config';
-import { Driver, DriverDailyPerformance } from '@/types/database';
+import type { Driver, DriverDailyPerformance } from '@/types/database';
 
-// Add cache interfaces
+// Cache interfaces
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
@@ -31,7 +31,6 @@ interface Cache {
   driverPerformance?: CacheEntry<DriverPerformanceCacheData>;
 }
 
-// Add these interfaces at the top with the other interfaces
 interface BatchOperation {
   type: 'INSERT' | 'UPDATE' | 'DELETE';
   table: string;
@@ -57,42 +56,24 @@ const CACHE_INVALIDATION_RULES: CacheInvalidationRules = {
   },
 };
 
-// Extend AppContextType
 interface AppContextType {
-  // Authentication & User State
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;
-
-  // Loading States
   loading: boolean;
   setLoading: (value: boolean) => void;
-
-  // Error Handling
   error: PostgrestError | null;
   setError: (error: PostgrestError | null) => void;
   clearError: () => void;
-
-  // Driver Management
   drivers: Driver[];
   fetchDrivers: (forceFetch?: boolean) => Promise<void>;
   updateDriverStatus: (driverId: string, status: 'active' | 'inactive' | 'suspended') => Promise<void>;
-
-  // Performance Tracking
   driverPerformance: DriverDailyPerformance[];
   fetchDriverPerformance: (driverId: string, startDate: string, endDate: string, forceFetch?: boolean) => Promise<void>;
-
-  // Utility Functions
   refreshData: () => Promise<void>;
-
-  // Real-time Updates
   subscribeToDriverUpdates: () => void;
   unsubscribeFromDriverUpdates: () => void;
-
-  // Cache Management
   clearCache: () => void;
   setCacheConfig: (config: Partial<CacheConfig>) => void;
-
-  // Batch Operations
   executeBatch: (operations: BatchOperation[]) => Promise<void>;
 }
 
@@ -118,8 +99,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     cache.current = {};
   }, []);
 
-  const updateCacheConfig = useCallback((config: Partial<CacheConfig>) => {
-    setCacheConfig((current) => ({ ...current, ...config }));
+  const invalidateCache = useCallback((table: string, event: 'INSERT' | 'UPDATE' | 'DELETE') => {
+    // Invalidate the main table cache
+    if (cache.current[table]) {
+      cache.current[table].expiresAt = 0;
+    }
+
+    // Check dependencies and invalidate them
+    const rules = CACHE_INVALIDATION_RULES[table];
+    if (rules && rules.invalidateOn.includes(event)) {
+      rules.dependencies.forEach((depTable) => {
+        if (cache.current[depTable]) {
+          cache.current[depTable].expiresAt = 0;
+        }
+      });
+    }
   }, []);
 
   const isCacheValid = useCallback(<T,>(entry?: CacheEntry<T>): entry is CacheEntry<T> => {
@@ -130,7 +124,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const fetchDrivers = useCallback(
     async (forceFetch = false) => {
       try {
-        // Check cache first
         if (!forceFetch && isCacheValid(cache.current.drivers)) {
           setDrivers(cache.current.drivers.data);
           return;
@@ -141,7 +134,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         if (error) throw error;
 
-        // Update cache and state
         const newData = data || [];
         cache.current.drivers = {
           data: newData,
@@ -250,7 +242,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       })
       .subscribe();
     setChannel(newChannel);
-  }, []);
+  }, [invalidateCache]);
 
   const unsubscribeFromDriverUpdates = useCallback(() => {
     if (channel) {
@@ -259,29 +251,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [channel]);
 
-  // Add cleanup on unmount
   useEffect(() => {
     return () => {
       unsubscribeFromDriverUpdates();
     };
   }, [unsubscribeFromDriverUpdates]);
-
-  const invalidateCache = useCallback((table: string, event: 'INSERT' | 'UPDATE' | 'DELETE') => {
-    // Invalidate the main table cache
-    if (cache.current[table]) {
-      cache.current[table].expiresAt = 0;
-    }
-
-    // Check dependencies and invalidate them
-    const rules = CACHE_INVALIDATION_RULES[table];
-    if (rules && rules.invalidateOn.includes(event)) {
-      rules.dependencies.forEach((depTable) => {
-        if (cache.current[depTable]) {
-          cache.current[depTable].expiresAt = 0;
-        }
-      });
-    }
-  }, []);
 
   const executeBatch = useCallback(
     async (operations: BatchOperation[]) => {
@@ -313,7 +287,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
           invalidateCache(table, type);
         }
 
-        // Refresh data after all operations complete
         await refreshData();
       } catch (err) {
         setError(err as PostgrestError);

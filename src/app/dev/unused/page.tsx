@@ -6,7 +6,7 @@ export default function UnusedFilesPage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Unused Files Analysis</h1>
-      
+
       {unusedFiles.length === 0 ? (
         <p className="text-green-600">No unused files found!</p>
       ) : (
@@ -21,4 +21,4 @@ export default function UnusedFilesPage() {
       )}
     </div>
   );
-} 
+}

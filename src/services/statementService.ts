@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase/config';
-import { DailyEntry, DriverDailyPerformance, DriverMonthlyStatement } from '@/types/database';
+import type { DailyEntry, DriverDailyPerformance, DriverMonthlyStatement } from '@/types/database';
 
 export async function generateMonthlyStatement(
   driverId: string,
@@ -35,6 +35,7 @@ export async function generateMonthlyStatement(
       year,
       total_days: dailyEntries.length,
       total_hours: dailyEntries.reduce((sum, entry) => sum + entry.hours_worked, 0),
+      daily_entries: dailyEntries,
     };
 
     const { data: savedStatement, error: saveError } = await supabase
@@ -56,7 +57,7 @@ function calculateHoursWorked(performance: DriverDailyPerformance): number {
   return performance.total_orders > 0 ? 8 : 0;
 }
 
-function determineStatus(performance: DriverDailyPerformance): 'present' | 'absent' | 'leave' | 'holiday' {
+function determineStatus(performance: DriverDailyPerformance): 'present' | 'absent' | 'on leave' {
   if (performance.total_orders > 0) return 'present';
   return 'absent';
 }

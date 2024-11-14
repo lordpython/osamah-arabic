@@ -1,47 +1,54 @@
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline';
+import { forwardRef } from 'react';
+import { cn } from '@/lib/utils';
+
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
-  brutal?: boolean;
+  loading?: boolean;
 }
 
-export function Button({
-  variant = 'primary',
-  size = 'md',
-  brutal = true,
-  className = '',
-  children,
-  ...props
-}: ButtonProps) {
-  const baseStyles = 'font-bold transition-all duration-200 inline-flex items-center justify-center';
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant = 'primary', size = 'md', loading, children, disabled, ...props }, ref) => {
+    const baseStyles = 'inline-flex items-center justify-center rounded-md font-medium transition-colors';
+    const focusStyles = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
+    const disabledStyles = 'disabled:opacity-50 disabled:pointer-events-none';
 
-  const variants = {
-    primary: 'bg-primary text-white hover:bg-primary-hover',
-    secondary: 'bg-secondary text-white hover:bg-secondary-hover',
-    outline: 'border-2 border-neutral-900 hover:bg-neutral-100',
-  };
+    const variantStyles = {
+      primary: 'bg-primary text-white hover:bg-primary/90',
+      secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+      ghost: 'hover:bg-accent hover:text-accent-foreground',
+    };
 
-  const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
-  };
+    const sizeStyles = {
+      sm: 'h-9 px-3 text-sm',
+      md: 'h-10 px-4 py-2',
+      lg: 'h-11 px-8',
+    };
 
-  const brutalStyles = brutal
-    ? 'border-2 border-black shadow-brutal hover:shadow-brutalHover hover:translate-x-[-2px] hover:translate-y-[-2px]'
-    : '';
+    return (
+      <button
+        className={cn(
+          baseStyles,
+          focusStyles,
+          disabledStyles,
+          variantStyles[variant],
+          sizeStyles[size],
+          className || ''
+        )}
+        ref={ref}
+        disabled={disabled || loading}
+        {...props}
+      >
+        {loading && (
+          <span className="mr-2">
+            <span className="sr-only">Loading</span>
+            {/* Add your loading spinner component here */}
+          </span>
+        )}
+        {children}
+      </button>
+    );
+  }
+);
 
-  return (
-    <button
-      className={`
-        ${baseStyles}
-        ${variants[variant]}
-        ${sizes[size]}
-        ${brutalStyles}
-        ${className}
-      `}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-}
+Button.displayName = 'Button';

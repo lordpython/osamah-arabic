@@ -9,21 +9,18 @@ interface UnusedFile {
 
 function getAllFiles(dir: string): string[] {
   const files: string[] = [];
-  
+
   if (!fs.existsSync(dir)) {
     return files;
   }
 
-  fs.readdirSync(dir).forEach(file => {
+  fs.readdirSync(dir).forEach((file) => {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
 
     if (stat.isDirectory()) {
       files.push(...getAllFiles(filePath));
-    } else if (
-      stat.isFile() && 
-      (filePath.endsWith('.ts') || filePath.endsWith('.tsx'))
-    ) {
+    } else if (stat.isFile() && (filePath.endsWith('.ts') || filePath.endsWith('.tsx'))) {
       files.push(filePath);
     }
   });
@@ -32,13 +29,7 @@ function getAllFiles(dir: string): string[] {
 }
 
 function isSpecialFile(filePath: string): boolean {
-  const specialFiles = [
-    'index.ts',
-    'index.tsx',
-    'types.ts',
-    'constants.ts',
-    'config.ts',
-  ];
+  const specialFiles = ['index.ts', 'index.tsx', 'types.ts', 'constants.ts', 'config.ts'];
   return specialFiles.includes(path.basename(filePath));
 }
 
@@ -59,21 +50,18 @@ export function analyzeUnusedFiles(rootDir: string = 'src'): UnusedFile[] {
   const importedFiles = new Set<string>();
 
   // Collect all imported files
-  sourceFiles.forEach(sourceFile => {
-    sourceFile.getImportDeclarations().forEach(importDecl => {
+  sourceFiles.forEach((sourceFile) => {
+    sourceFile.getImportDeclarations().forEach((importDecl) => {
       const moduleSpecifier = importDecl.getModuleSpecifierValue();
       if (moduleSpecifier.startsWith('.')) {
-        const resolvedPath = path.resolve(
-          path.dirname(sourceFile.getFilePath()),
-          moduleSpecifier
-        );
+        const resolvedPath = path.resolve(path.dirname(sourceFile.getFilePath()), moduleSpecifier);
         importedFiles.add(resolvedPath);
       }
     });
   });
 
   // Check each file
-  allFiles.forEach(file => {
+  allFiles.forEach((file) => {
     const absolutePath = path.resolve(file);
     const relativePath = path.relative(process.cwd(), file);
 
@@ -92,4 +80,4 @@ export function analyzeUnusedFiles(rootDir: string = 'src'): UnusedFile[] {
   });
 
   return unusedFiles;
-} 
+}

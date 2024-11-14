@@ -1,13 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import type { 
-  EmployeeRecord, 
-  Attendance, 
-  AccountingEntry, 
-  DriverDailyPerformance,
-  DailyOrderMetrics,
-  MonthlyOrderMetrics,
-  ProfitAndLoss
-} from '../database';
+
+import type { AccountingEntry, Attendance, EmployeeRecord } from '@/types/database';
 
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
   throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL');
@@ -37,26 +30,16 @@ export const supabase = createClient(
 export const hrOperations = {
   // Employee Management
   async addEmployee(employee: Omit<EmployeeRecord, 'id' | 'created_at' | 'updated_at'>) {
-    return await supabase
-      .from('employee_records')
-      .insert([employee])
-      .select();
+    return await supabase.from('employee_records').insert([employee]).select();
   },
 
   async updateEmployee(id: string, updates: Partial<EmployeeRecord>) {
-    return await supabase
-      .from('employee_records')
-      .update(updates)
-      .eq('id', id)
-      .select();
+    return await supabase.from('employee_records').update(updates).eq('id', id).select();
   },
 
   // Attendance Management
   async recordAttendance(attendance: Omit<Attendance, 'attendance_id'>) {
-    return await supabase
-      .from('attendance')
-      .insert([attendance])
-      .select();
+    return await supabase.from('attendance').insert([attendance]).select();
   },
 
   async getEmployeeAttendance(employeeId: string, startDate: string, endDate: string) {
@@ -67,25 +50,18 @@ export const hrOperations = {
       .gte('date', startDate)
       .lte('date', endDate)
       .order('date', { ascending: true });
-  }
+  },
 };
 
 // Accounting Operations
 export const accountingOperations = {
   // Financial Entries
   async addEntry(entry: Omit<AccountingEntry, 'entry_id' | 'created_at' | 'updated_at'>) {
-    return await supabase
-      .from('accounting_entries')
-      .insert([entry])
-      .select();
+    return await supabase.from('accounting_entries').insert([entry]).select();
   },
 
   async updateEntry(entryId: number, updates: Partial<AccountingEntry>) {
-    return await supabase
-      .from('accounting_entries')
-      .update(updates)
-      .eq('entry_id', entryId)
-      .select();
+    return await supabase.from('accounting_entries').update(updates).eq('entry_id', entryId).select();
   },
 
   async getEntriesByDateRange(startDate: string, endDate: string) {
@@ -98,11 +74,8 @@ export const accountingOperations = {
   },
 
   async getDailyProfitLoss(date: string) {
-    return await supabase
-      .from('accounting_entries')
-      .select('type, amount')
-      .eq('date', date);
-  }
+    return await supabase.from('accounting_entries').select('type, amount').eq('date', date);
+  },
 };
 
 // Dashboard Charts Data
@@ -156,7 +129,7 @@ export const dashboardCharts = {
       .gte('date', startDate)
       .lte('date', endDate)
       .order('date', { ascending: true });
-  }
+  },
 };
 
 // Real-time Subscriptions
@@ -165,10 +138,7 @@ export const realtime = {
   subscribeToAccountingEntries(callback: (payload: any) => void) {
     return supabase
       .channel('accounting_entries')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'accounting_entries' }, 
-        callback
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'accounting_entries' }, callback)
       .subscribe();
   },
 
@@ -176,10 +146,7 @@ export const realtime = {
   subscribeToAttendance(callback: (payload: any) => void) {
     return supabase
       .channel('attendance')
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'attendance' },
-        callback
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance' }, callback)
       .subscribe();
-  }
+  },
 };

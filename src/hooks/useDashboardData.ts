@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { supabase, dashboardCharts, realtime } from '../lib/supabase/config';
-import type { DashboardChartData } from '../types/recharts';
+
+import { dashboardCharts, supabase } from '../lib/supabase/config';
+
 import type { DailyOrderMetrics, MonthlyOrderMetrics } from '../types/database';
+import type { DashboardChartData } from '../types/recharts';
 
 interface DashboardData {
   driverStats: DashboardChartData[];
@@ -42,29 +44,22 @@ export function useDashboardData(): DashboardData & {
         .select('amount')
         .eq('type', 'income')
         .gte('date', startOfMonth.toISOString());
-      
+
       const monthlyRevenue = (revenueData || []).reduce(
         (sum: number, entry: { amount: any }) => sum + Number(entry.amount),
         0
       );
 
       // Fetch driver statistics
-      const { data: driversData } = await supabase
-        .from('drivers')
-        .select('status');
+      const { data: driversData } = await supabase.from('drivers').select('status');
 
-      const driverStats = [
-        'active',
-        'on_leave',
-        'suspended',
-        'inactive'
-      ].map(status => {
-        const count = driversData?.filter(d => d.status === status).length || 0;
+      const driverStats = ['active', 'on_leave', 'suspended', 'inactive'].map((status) => {
+        const count = driversData?.filter((d) => d.status === status).length || 0;
         const total = driversData?.length || 1;
         return {
           name: status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' '),
           value: count,
-          percentage: (count / total) * 100
+          percentage: (count / total) * 100,
         };
       });
 
@@ -85,7 +80,7 @@ export function useDashboardData(): DashboardData & {
         error: null,
       });
     } catch (error) {
-      setData(prev => ({
+      setData((prev) => ({
         ...prev,
         loading: false,
         error: error as Error,
@@ -101,52 +96,37 @@ export function useDashboardData(): DashboardData & {
       // Driver status changes
       supabase
         .channel('driver_changes')
-        .on('postgres_changes', 
-          { event: '*', schema: 'public', table: 'drivers' },
-          fetchData
-        )
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'drivers' }, fetchData)
         .subscribe(),
 
       // Accounting entries for revenue
       supabase
         .channel('accounting_changes')
-        .on('postgres_changes',
-          { event: '*', schema: 'public', table: 'accounting_entries' },
-          fetchData
-        )
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'accounting_entries' }, fetchData)
         .subscribe(),
 
       // Daily order metrics
       supabase
         .channel('daily_metrics')
-        .on('postgres_changes',
-          { event: '*', schema: 'public', table: 'daily_order_metrics' },
-          fetchData
-        )
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_order_metrics' }, fetchData)
         .subscribe(),
 
       // Monthly order metrics
       supabase
         .channel('monthly_metrics')
-        .on('postgres_changes',
-          { event: '*', schema: 'public', table: 'monthly_order_metrics' },
-          fetchData
-        )
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'monthly_order_metrics' }, fetchData)
         .subscribe(),
 
       // Driver performance
       supabase
         .channel('driver_performance')
-        .on('postgres_changes',
-          { event: '*', schema: 'public', table: 'driver_daily_performance' },
-          fetchData
-        )
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'driver_daily_performance' }, fetchData)
         .subscribe(),
     ];
 
     // Cleanup subscriptions
     return () => {
-      subscriptions.forEach(subscription => subscription.unsubscribe());
+      subscriptions.forEach((subscription) => subscription.unsubscribe());
     };
   }, [fetchData]);
 

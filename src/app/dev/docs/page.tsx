@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import Script from 'next/script';
+import { useEffect } from 'react';
 
 export default function DevDocs() {
   useEffect(() => {
@@ -19,14 +19,11 @@ export default function DevDocs() {
 
   return (
     <>
-      <Script 
-        src="https://cdn.jsdelivr.net/npm/mermaid@10.2.3/dist/mermaid.min.js" 
-        strategy="afterInteractive"
-      />
+      <Script src="https://cdn.jsdelivr.net/npm/mermaid@10.2.3/dist/mermaid.min.js" strategy="afterInteractive" />
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">Developer Documentation</h1>
-          
+
           {/* Database Schema Section */}
           <section className="bg-white rounded-lg shadow p-6 mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Database Schema</h2>
@@ -105,7 +102,7 @@ flowchart TD
           <section className="space-y-6">
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">Core Tables Overview</h2>
-              
+
               <div className="space-y-4">
                 {/* Drivers Table */}
                 <div>
@@ -114,9 +111,15 @@ flowchart TD
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Column</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Column
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Type
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Description
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">

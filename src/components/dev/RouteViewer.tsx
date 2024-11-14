@@ -39,9 +39,7 @@ export default function RouteViewer() {
         <div className="p-2 my-1 bg-gray-100 rounded">
           <div className="font-medium">{route.path}</div>
           <div className="text-sm text-gray-600">Component: {route.component}</div>
-          {route.layout && (
-            <div className="text-sm text-gray-600">Layout: {route.layout}</div>
-          )}
+          {route.layout && <div className="text-sm text-gray-600">Layout: {route.layout}</div>}
         </div>
         {route.children && renderRoutes(route.children, level + 1)}
       </div>
@@ -54,4 +52,4 @@ export default function RouteViewer() {
       {renderRoutes(routes)}
     </div>
   );
-} 
+}

@@ -16,9 +16,7 @@ const MotionDiv = motion.div as React.FC<MotionDivProps>;
 export default function ModernDashboard() {
   const { data: _metrics, error: _error } = useSupabaseQuery('metrics', async (supabase) => {
     // Fetch your metrics here
-    const { data, error } = await supabase
-      .from('metrics')
-      .select('*');
+    const { data, error } = await supabase.from('metrics').select('*');
     return { data, error };
   });
 

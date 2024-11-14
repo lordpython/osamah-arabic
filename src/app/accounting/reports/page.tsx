@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { AccountingEntry } from '@/types/database';
 
@@ -15,24 +16,25 @@ interface MonthlyFinancialData {
 }
 
 export default function ReportsPage() {
-  const { data: financialData, loading, error } = useSupabaseQuery<MonthlyFinancialData[]>(
-    'accounting_entries',
-    async (supabase) => {
-      const startDate = new Date();
-      startDate.setMonth(startDate.getMonth() - 6);
+  const {
+    data: financialData,
+    loading,
+    error,
+  } = useSupabaseQuery<MonthlyFinancialData[]>('accounting_entries', async (supabase) => {
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 6);
 
-      const { data, error } = await supabase
-        .from('accounting_entries')
-        .select('*')
-        .gte('date', startDate.toISOString())
-        .order('date');
+    const { data, error } = await supabase
+      .from('accounting_entries')
+      .select('*')
+      .gte('date', startDate.toISOString())
+      .order('date');
 
-      if (error) throw error;
+    if (error) throw error;
 
-      const monthlyData = processMonthlyData(data as AccountingEntry[]);
-      return { data: monthlyData, error: null };
-    }
-  );
+    const monthlyData = processMonthlyData(data as AccountingEntry[]);
+    return { data: monthlyData, error: null };
+  });
 
   function processMonthlyData(data: AccountingEntry[]): MonthlyFinancialData[] {
     const monthlyAggregates = data.reduce<Record<string, MonthlyFinancialData>>((acc, entry) => {
@@ -50,7 +52,7 @@ export default function ReportsPage() {
         };
       }
 
-      if (entry.type === 'income') {
+      if (entry.type === 'receipt') {
         acc[monthYear].income += Number(entry.amount);
       } else {
         acc[monthYear].expenses += Number(entry.amount);
@@ -118,25 +120,29 @@ export default function ReportsPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Income</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expenses</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Month
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Income
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Expenses
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Profit
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {(financialData || []).map((data) => (
                 <tr key={data.month}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{data.month}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${data.income.toLocaleString()}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${data.income.toLocaleString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     ${data.expenses.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${data.profit.toLocaleString()}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${data.profit.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -145,4 +151,4 @@ export default function ReportsPage() {
       </div>
     </div>
   );
-} 
+}

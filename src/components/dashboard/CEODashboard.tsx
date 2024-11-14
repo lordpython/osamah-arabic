@@ -1,4 +1,3 @@
-
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import DriverStatusChart from './DriverStatusChart';
 import FinancialSummary from './FinancialSummary';

@@ -1,73 +1,47 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { supabase, hrOperations } from '@/lib/supabase/config';
-import type { EmployeeRecord } from '@/types/database';
+import { useState } from 'react';
+
+import { hrOperations, supabase } from '@/lib/supabase/config';
+import type { AttendanceStatus, EmployeeRecord } from '@/types/database';
 
 const MotionDiv = motion.div;
 
-type EmployeeFormData = Omit<EmployeeRecord, 'id' | 'created_at' | 'updated_at'>;
+type FormData = {
+  employee_name: string;
+  date: string;
+  status: AttendanceStatus;
+  check_in?: string;
+  check_out?: string;
+};
 
-const departments = [
-  'HR Operations',
-  'Accounting',
-  'IT',
-  'Finance',
-  'Operations',
-  'Sales',
-  'Marketing',
-  'Logistics'
-];
+const attendanceStatuses: AttendanceStatus[] = ['present', 'absent', 'on leave'];
 
-const positions = [
-  'Manager',
-  'Team Lead',
-  'Senior',
-  'Junior',
-  'Intern',
-  'Driver',
-  'Coordinator',
-  'Accountant',
-  'HR Specialist'
-];
-
-const initialFormData: EmployeeFormData = {
-  employee_id: '',
-  full_name: '',
-  department: departments[0],
-  position: positions[0],
-  salary: 0,
-  joining_date: new Date().toISOString().split('T')[0],
-  status: 'active'
+const initialFormData: FormData = {
+  employee_name: '',
+  date: new Date().toISOString().split('T')[0],
+  status: 'present',
+  check_in: undefined,
+  check_out: undefined,
 };
 
 export default function EmployeeForm() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<EmployeeFormData>(initialFormData);
-  const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof EmployeeFormData, string>>>({});
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
   const validateForm = (): boolean => {
-    const errors: Partial<Record<keyof EmployeeFormData, string>> = {};
+    const errors: Partial<Record<keyof FormData, string>> = {};
 
-    if (!formData.employee_id.trim()) {
-      errors.employee_id = 'Employee ID is required';
-    } else if (!/^[A-Z0-9]{4,}$/i.test(formData.employee_id)) {
-      errors.employee_id = 'Employee ID must be at least 4 alphanumeric characters';
+    if (!formData.employee_name.trim()) {
+      errors.employee_name = 'Employee name is required';
     }
 
-    if (!formData.full_name.trim()) {
-      errors.full_name = 'Full name is required';
-    }
-
-    if (formData.salary < 0) {
-      errors.salary = 'Salary cannot be negative';
-    }
-
-    if (!formData.joining_date) {
-      errors.joining_date = 'Joining date is required';
+    if (!formData.date) {
+      errors.date = 'Date is required';
     }
 
     setValidationErrors(errors);
@@ -88,15 +62,25 @@ export default function EmployeeForm() {
     try {
       const { data: existingEmployee } = await supabase
         .from('employee_records')
-        .select('employee_id')
-        .eq('employee_id', formData.employee_id)
+        .select('employee_name')
+        .eq('employee_name', formData.employee_name)
+        .eq('date', formData.date)
         .single();
 
       if (existingEmployee) {
-        throw new Error('Employee ID already exists');
+        throw new Error('Employee record already exists for this date');
       }
 
-      const { error: insertError } = await hrOperations.addEmployee(formData);
+      // Convert form data to EmployeeRecord format
+      const employeeRecord: Omit<EmployeeRecord, 'id' | 'created_at' | 'updated_at'> = {
+        employee_name: formData.employee_name,
+        date: formData.date,
+        status: formData.status,
+        check_in: formData.check_in || undefined,
+        check_out: formData.check_out || undefined,
+      };
+
+      const { error: insertError } = await hrOperations.addEmployee(employeeRecord);
 
       if (insertError) throw new Error(insertError.message);
 
@@ -115,18 +99,18 @@ export default function EmployeeForm() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    setFormData(prev => ({
+    const { name, value } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'number' ? Number(value) : value
+      [name]: value || undefined,
     }));
     setSuccess(false);
-    
+
     // Clear validation error for the field being changed
-    if (validationErrors[name as keyof EmployeeFormData]) {
-      setValidationErrors(prev => ({
+    if (validationErrors[name as keyof FormData]) {
+      setValidationErrors((prev) => ({
         ...prev,
-        [name]: undefined
+        [name]: undefined,
       }));
     }
   };
@@ -142,9 +126,7 @@ export default function EmployeeForm() {
         <div className="px-4 py-6 sm:p-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Add New Employee</h2>
-            {loading && (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
-            )}
+            {loading && <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>}
           </div>
 
           {error && (
@@ -162,125 +144,89 @@ export default function EmployeeForm() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
               <div>
-                <label htmlFor="employee_id" className="block text-sm font-medium text-gray-900">
-                  Employee ID*
+                <label htmlFor="employee_name" className="block text-sm font-medium text-gray-900">
+                  Employee Name*
                 </label>
                 <input
                   type="text"
-                  id="employee_id"
-                  name="employee_id"
-                  value={formData.employee_id}
+                  id="employee_name"
+                  name="employee_name"
+                  value={formData.employee_name}
                   onChange={handleChange}
                   className={`mt-2 block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ${
-                    validationErrors.employee_id ? 'ring-red-300' : 'ring-gray-300'
+                    validationErrors.employee_name ? 'ring-red-300' : 'ring-gray-300'
                   } focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm`}
                   required
                 />
-                {validationErrors.employee_id && (
-                  <p className="mt-1 text-sm text-red-600">{validationErrors.employee_id}</p>
+                {validationErrors.employee_name && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.employee_name}</p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="full_name" className="block text-sm font-medium text-gray-900">
-                  Full Name*
-                </label>
-                <input
-                  type="text"
-                  id="full_name"
-                  name="full_name"
-                  value={formData.full_name}
-                  onChange={handleChange}
-                  className={`mt-2 block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ${
-                    validationErrors.full_name ? 'ring-red-300' : 'ring-gray-300'
-                  } focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm`}
-                  required
-                />
-                {validationErrors.full_name && (
-                  <p className="mt-1 text-sm text-red-600">{validationErrors.full_name}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="department" className="block text-sm font-medium text-gray-900">
-                  Department*
-                </label>
-                <select
-                  id="department"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  className="mt-2 block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-                  required
-                >
-                  {departments.map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="position" className="block text-sm font-medium text-gray-900">
-                  Position*
-                </label>
-                <select
-                  id="position"
-                  name="position"
-                  value={formData.position}
-                  onChange={handleChange}
-                  className="mt-2 block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-                  required
-                >
-                  {positions.map((pos) => (
-                    <option key={pos} value={pos}>
-                      {pos}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="salary" className="block text-sm font-medium text-gray-900">
-                  Salary*
-                </label>
-                <input
-                  type="number"
-                  id="salary"
-                  name="salary"
-                  value={formData.salary}
-                  onChange={handleChange}
-                  className={`mt-2 block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ${
-                    validationErrors.salary ? 'ring-red-300' : 'ring-gray-300'
-                  } focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm`}
-                  min="0"
-                  step="0.01"
-                  required
-                />
-                {validationErrors.salary && (
-                  <p className="mt-1 text-sm text-red-600">{validationErrors.salary}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="joining_date" className="block text-sm font-medium text-gray-900">
-                  Joining Date*
+                <label htmlFor="date" className="block text-sm font-medium text-gray-900">
+                  Date*
                 </label>
                 <input
                   type="date"
-                  id="joining_date"
-                  name="joining_date"
-                  value={formData.joining_date}
+                  id="date"
+                  name="date"
+                  value={formData.date}
                   onChange={handleChange}
                   className={`mt-2 block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ${
-                    validationErrors.joining_date ? 'ring-red-300' : 'ring-gray-300'
+                    validationErrors.date ? 'ring-red-300' : 'ring-gray-300'
                   } focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm`}
                   required
                 />
-                {validationErrors.joining_date && (
-                  <p className="mt-1 text-sm text-red-600">{validationErrors.joining_date}</p>
-                )}
+                {validationErrors.date && <p className="mt-1 text-sm text-red-600">{validationErrors.date}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="status" className="block text-sm font-medium text-gray-900">
+                  Status*
+                </label>
+                <select
+                  id="status"
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className="mt-2 block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                  required
+                >
+                  {attendanceStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="check_in" className="block text-sm font-medium text-gray-900">
+                  Check In Time
+                </label>
+                <input
+                  type="time"
+                  id="check_in"
+                  name="check_in"
+                  value={formData.check_in || ''}
+                  onChange={handleChange}
+                  className="mt-2 block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="check_out" className="block text-sm font-medium text-gray-900">
+                  Check Out Time
+                </label>
+                <input
+                  type="time"
+                  id="check_out"
+                  name="check_out"
+                  value={formData.check_out || ''}
+                  onChange={handleChange}
+                  className="mt-2 block w-full rounded-md border-0 px-3 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+                />
               </div>
             </div>
 

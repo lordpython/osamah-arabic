@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+
 import AccountingEntries from '@/components/accounting/AccountingEntries';
-import PaymentForm from '@/components/accounting/PaymentForm';
 import CSVImport from '@/components/accounting/CSVImport';
+import PaymentForm from '@/components/accounting/PaymentForm';
 import { accountingOperations } from '@/lib/supabase/config';
 
 const MotionDiv = motion.div;
@@ -35,15 +36,17 @@ export default function AccountingPage() {
       const headers = ['Date', 'Type', 'Category', 'Amount', 'Description', 'Payment Method', 'Status'];
       const csvContent = [
         headers.join(','),
-        ...data.map(entry => [
-          entry.date,
-          entry.type,
-          entry.category,
-          entry.amount,
-          `"${entry.description.replace(/"/g, '""')}"`,
-          entry.payment_method,
-          entry.status
-        ].join(','))
+        ...data.map((entry) =>
+          [
+            entry.date,
+            entry.type,
+            entry.category,
+            entry.amount,
+            `"${entry.description.replace(/"/g, '""')}"`,
+            entry.payment_method,
+            entry.status,
+          ].join(',')
+        ),
       ].join('\n');
 
       // Create and download the file
@@ -80,9 +83,7 @@ export default function AccountingPage() {
               setShowPaymentForm(false);
             }}
             className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
-              showCSVImport 
-                ? 'bg-white text-indigo-700' 
-                : 'bg-indigo-500 text-white hover:bg-indigo-400'
+              showCSVImport ? 'bg-white text-indigo-700' : 'bg-indigo-500 text-white hover:bg-indigo-400'
             }`}
           >
             {showCSVImport ? 'Hide Import' : 'Import CSV'}
@@ -93,9 +94,7 @@ export default function AccountingPage() {
               setShowCSVImport(false);
             }}
             className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
-              showPaymentForm 
-                ? 'bg-white text-indigo-700' 
-                : 'bg-indigo-500 text-white hover:bg-indigo-400'
+              showPaymentForm ? 'bg-white text-indigo-700' : 'bg-indigo-500 text-white hover:bg-indigo-400'
             }`}
           >
             {showPaymentForm ? 'Hide Form' : 'Add Entry'}
@@ -136,11 +135,7 @@ export default function AccountingPage() {
         </MotionDiv>
       )}
 
-      <MotionDiv
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
+      <MotionDiv initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
         <AccountingEntries />
       </MotionDiv>
     </div>

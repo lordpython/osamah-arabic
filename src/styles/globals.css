@@ -5,4 +5,19 @@
 /* Remove any conflicting dark theme styles */
 :root {
   background-color: white;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+@layer base {
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2;
+  }
+  
+  /* Improve keyboard navigation */
+  :focus:not(:focus-visible) {
+    @apply outline-none;
+  }
 }
