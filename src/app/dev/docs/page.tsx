@@ -1,15 +1,7 @@
 'use client';
 
-import { Metadata } from 'next';
 import { useEffect } from 'react';
 import Script from 'next/script';
-
-export const metadata: Metadata = {
-  title: 'Developer Documentation | Database Schema',
-  description: 'Comprehensive documentation of the application\'s database schema, relationships, and real-time data flows.',
-  keywords: ['database', 'schema', 'documentation', 'real-time', 'supabase'],
-  robots: 'noindex, nofollow'
-};
 
 export default function DevDocs() {
   useEffect(() => {
@@ -136,7 +128,7 @@ flowchart TD
                         <tr>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">name</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">text</td>
-                          <td className="px-6 py-4 text-sm text-gray-500">Driver's full name</td>
+                          <td className="px-6 py-4 text-sm text-gray-500">Driver&apos;s full name</td>
                         </tr>
                         <tr>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">status</td>
@@ -168,14 +160,4 @@ flowchart TD
       </div>
     </>
   );
-}
-
-// Separate metadata generation function
-export function generateMetadata(): Metadata {
-  return {
-    title: 'Developer Documentation | Database Schema',
-    description: 'Comprehensive documentation of the application\'s database schema, relationships, and real-time data flows.',
-    keywords: ['database', 'schema', 'documentation', 'real-time', 'supabase'],
-    robots: 'noindex, nofollow'
-  };
 }

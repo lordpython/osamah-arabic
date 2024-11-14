@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { supabase, accountingOperations, realtime } from '@/lib/supabase/config';
-import type { AccountingEntry } from '@/types/database';
+import { accountingOperations, realtime } from '../../lib/supabase/config'; // Removed unused supabase import
+import type { AccountingEntry } from '../../types/database';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -209,7 +209,7 @@ export default function PaymentList() {
                   {payment.category}
                 </td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm font-medium">
-                  <span className={payment.type === 'income' ? 'text-green-600' : 'text-red-600'}>
+                  <span className={payment.type === 'receipt' ? 'text-green-600' : 'text-red-600'}>
                     ${payment.amount.toFixed(2)}
                   </span>
                 </td>

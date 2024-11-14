@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
-import { supabase } from '@/lib/supabase/config';
+import { supabase } from '../../lib/supabase/config'; // Corrected import path
 
 export default function TestPage() {
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
@@ -13,7 +12,7 @@ export default function TestPage() {
 
   useEffect(() => {
     testConnection();
-  }, []);
+  }, [testConnection]);
 
   async function testConnection() {
     try {

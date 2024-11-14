@@ -2,8 +2,8 @@
 
 import { memo, useEffect, useRef } from 'react';
 import { useDashboardData } from '../../hooks/useDashboardData';
-import { DriverStatusChart } from './DriverStatusChart';
-import { OrderMetrics } from './OrderMetrics';
+import DriverStatusChart from './DriverStatusChart'; // Updated to default import
+import OrderMetrics from './OrderMetrics'; // Updated to default import
 import { MetricCardSkeleton } from '../shared/LoadingSkeleton';
 import { withErrorBoundary } from '../shared/ErrorBoundary';
 
@@ -127,6 +127,8 @@ function MainDashboardBase() {
     </div>
   );
 }
+
+MainDashboardBase.displayName = 'MainDashboardBase';
 
 export const MainDashboard = memo(withErrorBoundary(MainDashboardBase));
 export default MainDashboard;
