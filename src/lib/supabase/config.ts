@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+
 import { Database } from '@/types/supabase';
 
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -24,8 +25,8 @@ export const supabase = createClient<Database>(
     },
     global: {
       headers: {
-        'Role': 'authenticated'
-      }
-    }
+        Role: 'authenticated',
+      },
+    },
   }
-); 
+);

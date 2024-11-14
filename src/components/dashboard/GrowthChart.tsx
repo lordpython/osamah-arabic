@@ -1,4 +1,4 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface GrowthChartProps {
   data?: {
@@ -24,4 +24,4 @@ export default function GrowthChart({ data = [] }: GrowthChartProps) {
       </div>
     </div>
   );
-} 
+}

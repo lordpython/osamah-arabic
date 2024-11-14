@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+
 import CEODashboard from '@/components/dashboard/CEODashboard';
 
 export default function CEOPage() {
@@ -12,13 +13,11 @@ export default function CEOPage() {
       style={{
         maxWidth: '80rem',
         margin: '0 auto',
-        padding: '1.5rem'
+        padding: '1.5rem',
       }}
     >
       <div className="glass-effect rounded-2xl p-8 mb-8">
-        <h1 className="text-4xl font-black gradient-text mb-8">
-          Brunai Executive Dashboard
-        </h1>
+        <h1 className="text-4xl font-black gradient-text mb-8">Brunai Executive Dashboard</h1>
       </div>
 
       <div className="space-y-6">
@@ -26,4 +25,4 @@ export default function CEOPage() {
       </div>
     </motion.div>
   );
-} 
+}

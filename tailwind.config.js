@@ -8,10 +8,9 @@ module.exports = {
       colors: theme.colors,
       boxShadow: theme.shadows,
       borderWidth: {
-        '3': '3px',
-      }
+        3: '3px',
+      },
     },
   },
   plugins: [],
 };
-

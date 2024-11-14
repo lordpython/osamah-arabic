@@ -1,123 +1,121 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/config';
-import { Driver } from '@/types/database';
+import type { Database } from '@/types/supabase';
+
+type Driver = Database['public']['Tables']['drivers']['Row'];
 
 export default function AttendanceInput() {
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  const handleAttendanceSubmit = async (driverId: string, status: string, checkIn: string, checkOut: string) => {
+  useEffect(() => {
+    fetchDrivers();
+  }, []);
+
+  async function fetchDrivers() {
     try {
-      setSaving(true);
-      const { error } = await supabase
-        .from('attendance')
-        .upsert({
-          employee_id: driverId,
-          date: selectedDate,
-          check_in: checkIn,
-          check_out: checkOut,
-          status: status,
-        });
+      const { data, error } = await supabase
+        .from('drivers')
+        .select('*')
+        .eq('status', 'active')
+        .order('full_name');
 
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error saving attendance:', error);
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      setDrivers(data || []);
+      setError(null);
+    } catch (err) {
+      setError(err as Error);
+      console.error('Error fetching drivers:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        details: err,
+      });
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
-  };
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-red-50 rounded-lg">
+        <p className="text-red-700">Error loading drivers: {error.message}</p>
+        <button 
+          onClick={() => fetchDrivers()} 
+          className="mt-2 text-sm text-red-600 hover:text-red-500"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white shadow-sm rounded-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-medium text-gray-900">Daily Attendance Entry</h3>
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-        />
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-300">
-          <thead>
-            <tr>
-              <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Driver Name</th>
-              <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Check In</th>
-              <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Check Out</th>
-              <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
-              <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
+    <div className="p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-xl font-semibold mb-4">Attendance Input</h2>
+      <form>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="driver">
+            Driver
+          </label>
+          <select
+            id="driver"
+            name="driver"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          >
             {drivers.map((driver) => (
-              <AttendanceRow
-                key={driver.id}
-                driver={driver}
-                onSubmit={handleAttendanceSubmit}
-                saving={saving}
-              />
+              <option key={driver.id} value={driver.id}>
+                {driver.full_name}
+              </option>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </select>
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="date">
+            Date
+          </label>
+          <input
+            type="date"
+            id="date"
+            name="date"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="status">
+            Status
+          </label>
+          <select
+            id="status"
+            name="status"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          >
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+            <option value="late">Late</option>
+          </select>
+        </div>
+        <div className="flex items-center justify-between">
+          <button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
-
-function AttendanceRow({ driver, onSubmit, saving }: { 
-  driver: Driver; 
-  onSubmit: (driverId: string, status: string, checkIn: string, checkOut: string) => Promise<void>;
-  saving: boolean;
-}) {
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
-  const [status, setStatus] = useState('present');
-
-  return (
-    <tr>
-      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">{driver.full_name}</td>
-      <td className="whitespace-nowrap px-3 py-4 text-sm">
-        <input
-          type="time"
-          value={checkIn}
-          onChange={(e) => setCheckIn(e.target.value)}
-          className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-        />
-      </td>
-      <td className="whitespace-nowrap px-3 py-4 text-sm">
-        <input
-          type="time"
-          value={checkOut}
-          onChange={(e) => setCheckOut(e.target.value)}
-          className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-        />
-      </td>
-      <td className="whitespace-nowrap px-3 py-4 text-sm">
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-        >
-          <option value="present">Present</option>
-          <option value="absent">Absent</option>
-          <option value="leave">Leave</option>
-        </select>
-      </td>
-      <td className="whitespace-nowrap px-3 py-4 text-sm">
-        <button
-          onClick={() => onSubmit(driver.id, status, checkIn, checkOut)}
-          disabled={saving}
-          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </button>
-      </td>
-    </tr>
-  );
-} 

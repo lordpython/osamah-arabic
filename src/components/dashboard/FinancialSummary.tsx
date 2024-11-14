@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+
 import { supabase } from '@/lib/supabase/config';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { AccountingEntry } from '@/types/database';
 
 interface MonthlyFinancialData {
@@ -59,17 +60,17 @@ export default function FinancialSummary({ darkMode = false }: FinancialSummaryP
 
   function processMonthlyData(data: AccountingEntry[]): MonthlyFinancialData[] {
     const monthlyAggregates = data.reduce((acc: Record<string, MonthlyFinancialData>, entry) => {
-      const monthYear = new Date(entry.date).toLocaleString('default', { 
-        month: 'short', 
-        year: '2-digit' 
+      const monthYear = new Date(entry.date).toLocaleString('default', {
+        month: 'short',
+        year: '2-digit',
       });
-      
+
       if (!acc[monthYear]) {
-        acc[monthYear] = { 
+        acc[monthYear] = {
           month: monthYear,
           income: 0,
           expenses: 0,
-          profit: 0
+          profit: 0,
         };
       }
 
@@ -87,7 +88,7 @@ export default function FinancialSummary({ darkMode = false }: FinancialSummaryP
   }
 
   return (
-    <div className={darkMode ? "text-white" : "text-gray-900"}>
+    <div className={darkMode ? 'text-white' : 'text-gray-900'}>
       <div className="bg-white rounded-xl shadow-sm p-6">
         <h3 className="text-lg font-medium text-gray-900">Financial Performance</h3>
         {loading ? (
@@ -113,4 +114,4 @@ export default function FinancialSummary({ darkMode = false }: FinancialSummaryP
       </div>
     </div>
   );
-} 
+}

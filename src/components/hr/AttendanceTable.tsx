@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+
 import AttendanceInput from './AttendanceInput';
 import ExistingAttendanceTable from './ExistingAttendanceTable';
 
 export default function AttendanceTable() {
   const [view, setView] = useState<'view' | 'input'>('view');
-  
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -19,11 +20,7 @@ export default function AttendanceTable() {
         </button>
       </div>
 
-      {view === 'view' ? (
-        <ExistingAttendanceTable date="" attendanceRecords={[]} />
-      ) : (
-        <AttendanceInput />
-      )}
+      {view === 'view' ? <ExistingAttendanceTable date="" attendanceRecords={[]} /> : <AttendanceInput />}
     </div>
   );
-} 
+}

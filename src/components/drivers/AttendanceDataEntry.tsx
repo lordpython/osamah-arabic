@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
 import { supabase } from '@/lib/supabase/config';
-import AttendanceCell from './AttendanceCell';
 import { Driver } from '@/types/database';
+import AttendanceCell from './AttendanceCell';
 
 export default function AttendanceDataEntry() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
@@ -12,17 +13,16 @@ export default function AttendanceDataEntry() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetchDrivers();
-    fetchAttendance();
-  }, [selectedDate]);
+    const loadData = async () => {
+      await fetchDrivers();
+      await fetchAttendance();
+    };
+    loadData();
+  }, [selectedDate, fetchDrivers, fetchAttendance]);
 
   async function fetchDrivers() {
     try {
-      const { data, error } = await supabase
-        .from('drivers')
-        .select('*')
-        .eq('status', 'active')
-        .order('full_name');
+      const { data, error } = await supabase.from('drivers').select('*').eq('status', 'active').order('full_name');
 
       if (error) throw error;
       setDrivers(data || []);
@@ -37,39 +37,37 @@ export default function AttendanceDataEntry() {
     // Implementation similar to fetchDrivers
   }
 
-  async function handleBulkUpdate(status: 'present' | 'absent' | 'leave') {
+  const handleBulkUpdate = async (status: 'present' | 'absent' | 'leave') => {
     setSaving(true);
     try {
-      const updates = drivers.map(driver => ({
-        driver_id: driver.id,
-        date: selectedDate.toISOString().split('T')[0],
-        hours_worked: status === 'present' ? 8 : 0,
-        status: status,
-        updated_at: new Date().toISOString()
+      const operations = drivers.map((driver) => ({
+        type: 'INSERT' as const,
+        table: 'driver_attendance',
+        data: {
+          driver_id: driver.id,
+          date: selectedDate.toISOString().split('T')[0],
+          hours_worked: status === 'present' ? 8 : 0,
+          status,
+          updated_at: new Date().toISOString(),
+        },
       }));
 
-      const { error } = await supabase
-        .from('driver_attendance')
-        .upsert(updates);
-
-      if (error) throw error;
+      await executeBatch(operations);
     } catch (error) {
-      console.error('Error bulk updating attendance:', error);
+      console.error('Error in bulk update:', error);
     } finally {
       setSaving(false);
     }
-  }
+  };
 
   async function handleStatusUpdate(driverId: string, status: 'present' | 'absent' | 'leave') {
     try {
-      const { error } = await supabase
-        .from('driver_attendance')
-        .upsert({
-          driver_id: driverId,
-          date: selectedDate.toISOString().split('T')[0],
-          status: status,
-          updated_at: new Date().toISOString()
-        });
+      const { error } = await supabase.from('driver_attendance').upsert({
+        driver_id: driverId,
+        date: selectedDate.toISOString().split('T')[0],
+        status: status,
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) throw error;
     } catch (error) {
@@ -79,14 +77,12 @@ export default function AttendanceDataEntry() {
 
   async function handleNotesUpdate(driverId: string, notes: string) {
     try {
-      const { error } = await supabase
-        .from('driver_attendance')
-        .upsert({
-          driver_id: driverId,
-          date: selectedDate.toISOString().split('T')[0],
-          notes: notes,
-          updated_at: new Date().toISOString()
-        });
+      const { error } = await supabase.from('driver_attendance').upsert({
+        driver_id: driverId,
+        date: selectedDate.toISOString().split('T')[0],
+        notes: notes,
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) throw error;
     } catch (error) {
@@ -98,7 +94,7 @@ export default function AttendanceDataEntry() {
     <div className="space-y-4 p-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-900">Attendance Data Entry</h2>
-        
+
         <div className="flex space-x-4 items-center">
           <input
             type="date"
@@ -106,7 +102,7 @@ export default function AttendanceDataEntry() {
             onChange={(e) => setSelectedDate(new Date(e.target.value))}
             className="rounded-md border-gray-300"
           />
-          
+
           <div className="flex space-x-2">
             <button
               onClick={() => handleBulkUpdate('present')}
@@ -150,9 +146,7 @@ export default function AttendanceDataEntry() {
             <tbody className="bg-white divide-y divide-gray-200">
               {drivers.map((driver) => (
                 <tr key={driver.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {driver.full_name}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{driver.full_name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <AttendanceCell
                       driverId={driver.id}
@@ -163,7 +157,7 @@ export default function AttendanceDataEntry() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <select
                       className="rounded-md border-gray-300"
-                      onChange={(e) => handleStatusUpdate(driver.id, e.target.value as "present" | "absent" | "leave")}
+                      onChange={(e) => handleStatusUpdate(driver.id, e.target.value as 'present' | 'absent' | 'leave')}
                     >
                       <option value="present">Present</option>
                       <option value="absent">Absent</option>
@@ -187,4 +181,8 @@ export default function AttendanceDataEntry() {
       )}
     </div>
   );
-} 
+}
+function executeBatch(operations: { type: "INSERT"; table: string; data: { driver_id: string; date: string; hours_worked: number; status: "leave" | "present" | "absent"; updated_at: string; }; }[]) {
+  throw new Error('Function not implemented.');
+}
+

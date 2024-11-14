@@ -3,5 +3,5 @@ const navigationItems = [
   { name: 'CEO Dashboard', href: '/ceo' },
   { name: 'HR', href: '/hr' },
   { name: 'Drivers', href: '/drivers' },
-  { name: 'Accounting', href: '/accounting' }
-]; 
+  { name: 'Accounting', href: '/accounting' },
+];

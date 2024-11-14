@@ -228,4 +228,4 @@ export interface DailyEntry {
   hours_worked: number;
   status: 'present' | 'absent' | 'leave' | 'holiday';
   notes: string;
-} 
+}

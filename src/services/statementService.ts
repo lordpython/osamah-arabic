@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase/config';
-import { DriverMonthlyStatement, DailyEntry, DriverDailyPerformance } from '@/types/database';
+import { DailyEntry, DriverDailyPerformance, DriverMonthlyStatement } from '@/types/database';
 
 export async function generateMonthlyStatement(
   driverId: string,
@@ -19,14 +19,15 @@ export async function generateMonthlyStatement(
 
     if (perfError) throw perfError;
 
-    const dailyEntries: DailyEntry[] = performances?.map((perf: DriverDailyPerformance) => ({
-      entry_id: 0,
-      statement_id: 0,
-      day: new Date(perf.date).getDate(),
-      hours_worked: calculateHoursWorked(perf),
-      status: determineStatus(perf),
-      notes: generateNotes(perf)
-    })) || [];
+    const dailyEntries: DailyEntry[] =
+      performances?.map((perf: DriverDailyPerformance) => ({
+        entry_id: 0,
+        statement_id: 0,
+        day: new Date(perf.date).getDate(),
+        hours_worked: calculateHoursWorked(perf),
+        status: determineStatus(perf),
+        notes: generateNotes(perf),
+      })) || [];
 
     const statement: Partial<DriverMonthlyStatement> = {
       driver_id: driverId,
@@ -34,7 +35,6 @@ export async function generateMonthlyStatement(
       year,
       total_days: dailyEntries.length,
       total_hours: dailyEntries.reduce((sum, entry) => sum + entry.hours_worked, 0),
-      daily_entries: dailyEntries
     };
 
     const { data: savedStatement, error: saveError } = await supabase
@@ -70,4 +70,4 @@ function generateNotes(performance: DriverDailyPerformance): string {
     notes.push(`Rating: ${performance.rating_average}`);
   }
   return notes.join(' | ');
-} 
+}

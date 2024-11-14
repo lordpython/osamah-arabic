@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
 import { supabase } from '@/lib/supabase/config';
 import { Driver, DriverAttendanceStatement } from '@/types/database';
 
@@ -11,31 +12,20 @@ export default function AttendanceTracking() {
   const [loading, setLoading] = useState(true);
   const [statements, setStatements] = useState<DriverAttendanceStatement[]>([]);
 
-  const daysInMonth = Array.from(
-    { length: new Date(selectedYear, selectedMonth, 0).getDate() },
-    (_, i) => i + 1
-  );
+  const daysInMonth = Array.from({ length: new Date(selectedYear, selectedMonth, 0).getDate() }, (_, i) => i + 1);
 
-  useEffect(() => {
-    fetchDrivers();
-    fetchAttendanceStatements();
-  }, [selectedMonth, selectedYear]);
-
-  async function fetchDrivers() {
+  const fetchDrivers = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('drivers')
-        .select('*')
-        .eq('status', 'active');
+      const { data, error } = await supabase.from('drivers').select('*').eq('status', 'active');
 
       if (error) throw error;
       setDrivers(data || []);
     } catch (error) {
       console.error('Error fetching drivers:', error);
     }
-  }
+  }, []);
 
-  async function fetchAttendanceStatements() {
+  const fetchAttendanceStatements = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('driver_attendance_statements')
@@ -50,7 +40,12 @@ export default function AttendanceTracking() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [selectedMonth, selectedYear]);
+
+  useEffect(() => {
+    fetchDrivers();
+    fetchAttendanceStatements();
+  }, [fetchDrivers, fetchAttendanceStatements]);
 
   return (
     <div className="space-y-4">
@@ -117,4 +112,4 @@ export default function AttendanceTracking() {
       </div>
     </div>
   );
-} 
+}

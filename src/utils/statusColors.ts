@@ -11,4 +11,4 @@ export function getStatusColor(status?: string): string {
     default:
       return 'text-gray-400';
   }
-} 
+}

@@ -1,15 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/config';
+import { useState } from 'react';
+
 import { DriverMonthlyStatement } from '@/types/database';
 
 export default function MonthlyStatement() {
   const [statements, setStatements] = useState<DriverMonthlyStatement[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Generate array of days in a month (1-31)
   const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
+
+  function getStatusColor(status?: string) {
+    switch (status) {
+      case 'present':
+        return 'text-green-600 bg-green-50';
+      case 'absent':
+        return 'text-red-600 bg-red-50';
+      case 'leave':
+        return 'text-yellow-600 bg-yellow-50';
+      case 'holiday':
+        return 'text-blue-600 bg-blue-50';
+      default:
+        return 'text-gray-500';
+    }
+  }
 
   return (
     <div className="overflow-x-auto">
@@ -39,14 +53,9 @@ export default function MonthlyStatement() {
                 const dailyRecord = statement.daily_records.find(
                   (record: { day: number; hours_worked: number; status: string }) => record.day === day
                 );
-                
+
                 return (
-                  <td
-                    key={day}
-                    className={`px-3 py-4 text-center text-sm ${
-                      getStatusColor(dailyRecord?.status)
-                    }`}
-                  >
+                  <td key={day} className={`px-3 py-4 text-center text-sm ${getStatusColor(dailyRecord?.status)}`}>
                     {dailyRecord?.hours_worked || '-'}
                   </td>
                 );
@@ -58,18 +67,3 @@ export default function MonthlyStatement() {
     </div>
   );
 }
-
-function getStatusColor(status?: string) {
-  switch (status) {
-    case 'present':
-      return 'text-green-600 bg-green-50';
-    case 'absent':
-      return 'text-red-600 bg-red-50';
-    case 'leave':
-      return 'text-yellow-600 bg-yellow-50';
-    case 'holiday':
-      return 'text-blue-600 bg-blue-50';
-    default:
-      return 'text-gray-500';
-  }
-} 

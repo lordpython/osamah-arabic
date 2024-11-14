@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
 import { supabase } from '@/lib/supabase/config';
 import { AccountingEntry } from '@/types/accounting';
 import CSVImport from './CSVImport';
@@ -41,14 +42,10 @@ export default function AccountingEntries() {
           if (payload.eventType === 'INSERT') {
             setEntries((current) => [payload.new as AccountingEntry, ...current]);
           } else if (payload.eventType === 'DELETE') {
-            setEntries((current) =>
-              current.filter((entry) => entry.id !== payload.old.id)
-            );
+            setEntries((current) => current.filter((entry) => entry.id !== payload.old.id));
           } else if (payload.eventType === 'UPDATE') {
             setEntries((current) =>
-              current.map((entry) =>
-                entry.id === payload.new.id ? (payload.new as AccountingEntry) : entry
-              )
+              current.map((entry) => (entry.id === payload.new.id ? (payload.new as AccountingEntry) : entry))
             );
           }
         }
@@ -101,9 +98,7 @@ export default function AccountingEntries() {
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       <span
                         className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                          entry.type === 'income'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
+                          entry.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}
                       >
                         {entry.type}
@@ -122,4 +117,4 @@ export default function AccountingEntries() {
       </div>
     </div>
   );
-} 
+}

@@ -9,30 +9,30 @@ export default function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const mainNavigation = [
-    { 
-      name: 'Dashboard', 
-      href: '/dashboard' 
+    {
+      name: 'Dashboard',
+      href: '/dashboard',
     },
-    { 
-      name: 'HR Operations', 
+    {
+      name: 'HR Operations',
       href: '/hr',
       subItems: [
         { name: 'Attendance', href: '/hr/attendance' },
         { name: 'Driver Management', href: '/hr/drivers' },
         { name: 'Performance Reviews', href: '/hr/performance' },
-        { name: 'Leave Management', href: '/hr/leave' }
-      ]
+        { name: 'Leave Management', href: '/hr/leave' },
+      ],
     },
-    { 
-      name: 'Accounting', 
+    {
+      name: 'Accounting',
       href: '/accounting',
       subItems: [
         { name: 'Transactions', href: '/accounting/transactions' },
         { name: 'Driver Payments', href: '/accounting/payments' },
         { name: 'Expenses', href: '/accounting/expenses' },
-        { name: 'Reports', href: '/accounting/reports' }
-      ]
-    }
+        { name: 'Reports', href: '/accounting/reports' },
+      ],
+    },
   ];
 
   return (
@@ -44,7 +44,9 @@ export default function Navigation() {
               <Link href="/" className="flex items-center space-x-2">
                 {/* Brunai Logo */}
                 <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center">
-                  <span className="text-2xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">B</span>
+                  <span className="text-2xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">
+                    B
+                  </span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-xl font-bold text-white">Brunai</span>
@@ -96,7 +98,12 @@ export default function Navigation() {
             <div className="hidden sm:flex items-center space-x-3">
               <button className="text-blue-100 hover:text-white">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
                 </svg>
               </button>
               <div className="h-6 w-px bg-blue-300/30"></div>
@@ -117,12 +124,7 @@ export default function Navigation() {
                 className="inline-flex items-center justify-center p-2 rounded-md text-blue-100 hover:text-white hover:bg-blue-800"
               >
                 <span className="sr-only">Open main menu</span>
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -159,9 +161,7 @@ export default function Navigation() {
                         key={subItem.href}
                         href={subItem.href}
                         className={`${
-                          pathname === subItem.href
-                            ? 'text-white'
-                            : 'text-blue-100 hover:text-white'
+                          pathname === subItem.href ? 'text-white' : 'text-blue-100 hover:text-white'
                         } block py-2 pl-3 pr-4 text-sm transition-colors`}
                       >
                         {subItem.name}
@@ -176,4 +176,4 @@ export default function Navigation() {
       )}
     </nav>
   );
-} 
+}

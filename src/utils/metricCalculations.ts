@@ -10,8 +10,6 @@ export function calculateCompletedOrders(data: any[]): number {
 }
 
 export function calculateAverageRating(data: any[]): number {
-  const ratings = data?.filter(d => d.performance?.rating_average);
-  return ratings?.length 
-    ? ratings.reduce((sum, d) => sum + d.performance.rating_average, 0) / ratings.length 
-    : 0;
-} 
+  const ratings = data?.filter((d) => d.performance?.rating_average);
+  return ratings?.length ? ratings.reduce((sum, d) => sum + d.performance.rating_average, 0) / ratings.length : 0;
+}

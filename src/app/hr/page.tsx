@@ -1,19 +1,20 @@
 'use client';
 
+import { HTMLMotionProps, motion } from 'framer-motion';
 import { useState } from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
+
 import AttendanceTable from '@/components/hr/AttendanceTable';
 import DriverManagement from '@/components/hr/DriverManagement';
 import PerformanceMetrics from '@/components/hr/PerformanceMetrics';
 
 // Define proper types for motion components
-type MotionDivProps = HTMLMotionProps<"div"> & {
+type MotionDivProps = HTMLMotionProps<'div'> & {
   className?: string;
   children: React.ReactNode;
   style?: React.CSSProperties;
 };
 
-type MotionButtonProps = HTMLMotionProps<"button"> & {
+type MotionButtonProps = HTMLMotionProps<'button'> & {
   onClick?: () => void;
   children: React.ReactNode;
   style?: React.CSSProperties;
@@ -30,16 +31,14 @@ export default function HRDashboard() {
   const [activeTab, setActiveTab] = useState('attendance');
 
   return (
-    <MotionDiv 
+    <MotionDiv
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       style={{ maxWidth: '80rem', margin: '0 auto', padding: '3rem 1rem' }}
     >
       <div className="glass-effect rounded-2xl p-8 mb-8">
-        <h1 className="text-4xl font-black gradient-text mb-8">
-          Brunai HR Operations Dashboard
-        </h1>
-        
+        <h1 className="text-4xl font-black gradient-text mb-8">Brunai HR Operations Dashboard</h1>
+
         <nav className="flex space-x-6">
           {['attendance', 'drivers', 'performance'].map((tab) => (
             <MotionButton
@@ -55,7 +54,7 @@ export default function HRDashboard() {
                 textTransform: 'capitalize',
                 transition: 'all 300ms',
                 background: activeTab === tab ? 'var(--primary)' : 'white',
-                color: activeTab === tab ? 'white' : 'inherit'
+                color: activeTab === tab ? 'white' : 'inherit',
               }}
             >
               {tab}
@@ -64,7 +63,7 @@ export default function HRDashboard() {
         </nav>
       </div>
 
-      <MotionDiv 
+      <MotionDiv
         key={activeTab}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -74,7 +73,7 @@ export default function HRDashboard() {
           padding: '2rem',
           borderRadius: '1rem',
           background: 'rgba(255, 255, 255, 0.8)',
-          backdropFilter: 'blur(8px)'
+          backdropFilter: 'blur(8px)',
         }}
       >
         {activeTab === 'attendance' && <AttendanceTable />}
@@ -83,4 +82,4 @@ export default function HRDashboard() {
       </MotionDiv>
     </MotionDiv>
   );
-} 
+}

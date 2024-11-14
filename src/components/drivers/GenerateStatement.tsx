@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { generateMonthlyStatement } from '@/services/statementService';
 
 export default function GenerateStatement() {
@@ -12,7 +13,7 @@ export default function GenerateStatement() {
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const statement = await generateMonthlyStatement(driverId, month, year);
       if (statement) {
@@ -76,4 +77,4 @@ export default function GenerateStatement() {
       </button>
     </form>
   );
-} 
+}

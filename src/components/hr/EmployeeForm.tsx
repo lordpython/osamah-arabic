@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { supabase } from '@/lib/supabase/config';
 import { NewEmployee } from '@/types/hr';
 
@@ -26,10 +27,7 @@ export default function EmployeeForm() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from('employees')
-        .insert([employee])
-        .select();
+      const { error } = await supabase.from('employees').insert([employee]);
 
       if (error) throw error;
 
@@ -208,4 +206,4 @@ export default function EmployeeForm() {
       </div>
     </form>
   );
-} 
+}

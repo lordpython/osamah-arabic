@@ -1,8 +1,9 @@
 'use client';
 
+import { motion } from 'framer-motion';
+import Papa, { ParseError, ParseResult } from 'papaparse';
 import { useState } from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
-import Papa from 'papaparse';
+
 import { supabase } from '@/lib/supabase/config';
 
 interface CSVRow {
@@ -13,16 +14,23 @@ interface CSVRow {
   category: string;
 }
 
-interface ParseResult {
-  data: CSVRow[];
-  errors: Papa.ParseError[];
-  meta: Papa.ParseMeta;
-}
+const validateCSVData = (data: CSVRow[]): CSVRow[] => {
+  return data.filter((row) => {
+    const date = new Date(row.transaction_date);
+    const amount = parseFloat(row.amount);
+    return (
+      !isNaN(date.getTime()) &&
+      !isNaN(amount) &&
+      ['income', 'expense'].includes(row.type) &&
+      row.description?.length > 0 &&
+      row.category?.length > 0
+    );
+  });
+};
 
 export default function CSVImport() {
-  const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<CSVRow[]>([]);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -30,130 +38,93 @@ export default function CSVImport() {
 
     Papa.parse<CSVRow>(file, {
       header: true,
-      complete: (results: ParseResult) => {
+      complete: (results: ParseResult<CSVRow>) => {
         const validData = validateCSVData(results.data);
+        if (validData.length === 0) {
+          setError('No valid data found in the CSV file');
+          return;
+        }
+
         setPreview(validData);
+        setError(null);
       },
-      error: (error: Error, file: LocalFile) => {
-        setError('Error parsing CSV file: ' + error.message);
-      }
+      error: (error: Error, file: File) => {
+        setError(`Error parsing CSV file: ${error.message}`);
+      },
+      encoding: 'UTF-8'
     });
   };
-
-  const validateCSVData = (data: CSVRow[]): CSVRow[] => {
-    return data.filter(row => {
-      const date = new Date(row.transaction_date);
-      const amount = parseFloat(row.amount);
-      return (
-        !isNaN(date.getTime()) &&
-        !isNaN(amount) &&
-        ['income', 'expense'].includes(row.type) &&
-        row.description?.length > 0 &&
-        row.category?.length > 0
-      );
-    });
-  };
-
-  const MotionButton = motion.button as any;
 
   const handleImport = async () => {
-    setUploading(true);
-    setError('');
-
     try {
-      const formattedData = preview.map(row => ({
-        ...row,
-        amount: parseFloat(row.amount),
-        transaction_date: new Date(row.transaction_date).toISOString()
-      }));
-
-      const { error } = await supabase
-        .from('accounting_entries')
-        .insert(formattedData);
+      const { data, error } = await supabase.from('accounting_entries').insert(preview);
 
       if (error) throw error;
 
+      // Reset after successful import
       setPreview([]);
-      alert('Data imported successfully!');
+      setError(null);
     } catch (err) {
-      setError('Error importing data: ' + (err as Error).message);
-    } finally {
-      setUploading(false);
+      setError(`Import failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
   return (
-    <div className="glass-effect p-6 rounded-xl">
-      <h2 className="text-2xl font-bold gradient-text mb-6">Import Accounting Data</h2>
+    <div className="p-6 bg-white shadow-md rounded-lg">
+      <h2 className="text-xl font-semibold mb-4">CSV Import</h2>
       
-      <div className="space-y-6">
-        <div className="flex items-center justify-center w-full">
-          <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors">
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <svg className="w-10 h-10 text-neutral-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-              <p className="mb-2 text-sm text-neutral-500">
-                <span className="font-semibold">Click to upload</span> or drag and drop
-              </p>
-              <p className="text-xs text-neutral-500">CSV file only</p>
-            </div>
-            <input 
-              type="file" 
-              className="hidden" 
-              accept=".csv" 
-              onChange={handleFileUpload}
-              disabled={uploading}
-            />
-          </label>
+      <input 
+        type="file" 
+        accept=".csv" 
+        onChange={handleFileUpload} 
+        className="mb-4 block w-full text-sm text-gray-500 
+        file:mr-4 file:py-2 file:px-4 
+        file:rounded-full file:border-0 
+        file:text-sm file:font-semibold
+        file:bg-indigo-50 file:text-indigo-700
+        hover:file:bg-indigo-100"
+      />
+
+      {error && (
+        <div className="bg-red-50 text-red-700 p-3 rounded-md mb-4">
+          {error}
         </div>
+      )}
 
-        {error && (
-          <div className="bg-red-50 text-red-700 p-4 rounded-lg">
-            {error}
-          </div>
-        )}
+      {preview.length > 0 && (
+        <div>
+          <h3 className="text-lg font-medium mb-2">Preview ({preview.length} rows)</h3>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border p-2">Date</th>
+                <th className="border p-2">Description</th>
+                <th className="border p-2">Amount</th>
+                <th className="border p-2">Type</th>
+                <th className="border p-2">Category</th>
+              </tr>
+            </thead>
+            <tbody>
+              {preview.map((row, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="border p-2">{row.transaction_date}</td>
+                  <td className="border p-2">{row.description}</td>
+                  <td className="border p-2">{row.amount}</td>
+                  <td className="border p-2">{row.type}</td>
+                  <td className="border p-2">{row.category}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-        {preview.length > 0 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Preview ({preview.length} entries)</h3>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-neutral-200">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Description</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Type</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Category</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase">Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-200">
-                  {preview.slice(0, 5).map((row, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-3 text-sm">{row.transaction_date}</td>
-                      <td className="px-4 py-3 text-sm">{row.description}</td>
-                      <td className="px-4 py-3 text-sm">{row.type}</td>
-                      <td className="px-4 py-3 text-sm">{row.category}</td>
-                      <td className="px-4 py-3 text-sm text-right">${parseFloat(row.amount).toFixed(2)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <MotionButton
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleImport}
-              disabled={uploading}
-              className="w-full px-4 py-2 bg-primary text-white rounded-lg neo-brutalism disabled:opacity-50"
-            >
-              {uploading ? 'Importing...' : `Import ${preview.length} Entries`}
-            </MotionButton>
-          </div>
-        )}
-      </div>
+          <button 
+            onClick={handleImport}
+            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          >
+            Import Data
+          </button>
+        </div>
+      )}
     </div>
   );
-} 
+}

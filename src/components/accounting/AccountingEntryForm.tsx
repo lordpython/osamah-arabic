@@ -1,19 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+
 import { supabase } from '@/lib/supabase/config';
 import { NewAccountingEntry } from '@/types/accounting';
 
-const categories = [
-  'Sales',
-  'Services',
-  'Salary',
-  'Rent',
-  'Utilities',
-  'Office Supplies',
-  'Marketing',
-  'Other',
-];
+const categories = ['Sales', 'Services', 'Salary', 'Rent', 'Utilities', 'Office Supplies', 'Marketing', 'Other'];
 
 export default function AccountingEntryForm() {
   const [loading, setLoading] = useState(false);
@@ -30,10 +22,7 @@ export default function AccountingEntryForm() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from('accounting_entries')
-        .insert([entry])
-        .select();
+      const { data, error } = await supabase.from('accounting_entries').insert([entry]).select();
 
       if (error) throw error;
 
@@ -165,4 +154,4 @@ export default function AccountingEntryForm() {
       </div>
     </form>
   );
-} 
+}

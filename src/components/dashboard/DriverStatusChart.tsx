@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+
 import { supabase } from '@/lib/supabase/config';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 interface DriverStat {
   name: string;
@@ -40,10 +41,10 @@ export default function DriverStatusChart({ darkMode = false }: DriverStatusChar
       }
 
       const stats: DriverStat[] = [
-        { name: 'Active', value: data.filter(d => d.status === 'active').length },
-        { name: 'On Leave', value: data.filter(d => d.status === 'on_leave').length },
-        { name: 'Suspended', value: data.filter(d => d.status === 'suspended').length },
-        { name: 'Inactive', value: data.filter(d => d.status === 'inactive').length }
+        { name: 'Active', value: data.filter((d) => d.status === 'active').length },
+        { name: 'On Leave', value: data.filter((d) => d.status === 'on_leave').length },
+        { name: 'Suspended', value: data.filter((d) => d.status === 'suspended').length },
+        { name: 'Inactive', value: data.filter((d) => d.status === 'inactive').length },
       ];
 
       setDriverStats(stats);
@@ -57,7 +58,7 @@ export default function DriverStatusChart({ darkMode = false }: DriverStatusChar
   }
 
   return (
-    <div className={darkMode ? "text-white" : "text-gray-900"}>
+    <div className={darkMode ? 'text-white' : 'text-gray-900'}>
       <div className="bg-white rounded-xl shadow-sm p-6">
         <h3 className="text-lg font-medium text-gray-900">Driver Status Distribution</h3>
         {loading ? (
@@ -90,4 +91,4 @@ export default function DriverStatusChart({ darkMode = false }: DriverStatusChar
       </div>
     </div>
   );
-} 
+}

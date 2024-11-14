@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { supabase } from '@/lib/supabase/config';
 
 interface AttendanceCellProps {
@@ -10,26 +11,24 @@ interface AttendanceCellProps {
   onUpdate: (hours: number) => void;
 }
 
-export default function AttendanceCell({ 
-  driverId, 
-  date, 
-  initialValue = 0,
-  onUpdate 
-}: AttendanceCellProps) {
+export default function AttendanceCell({ driverId, date, initialValue = 0, onUpdate }: AttendanceCellProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [hours, setHours] = useState(initialValue);
 
+  const getStatusColor = (hours: number) => {
+    if (hours > 0) return 'text-green-600';
+    return 'text-gray-500';
+  };
+
   async function handleUpdate(newValue: number) {
     try {
-      const { error } = await supabase
-        .from('driver_attendance')
-        .upsert({
-          driver_id: driverId,
-          date: date,
-          hours_worked: newValue,
-          status: newValue > 0 ? 'present' : 'absent',
-          updated_at: new Date().toISOString()
-        });
+      const { error } = await supabase.from('driver_attendance').upsert({
+        driver_id: driverId,
+        date: date,
+        hours_worked: newValue,
+        status: newValue > 0 ? 'present' : 'absent',
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) throw error;
       onUpdate(newValue);
@@ -59,17 +58,8 @@ export default function AttendanceCell({
   }
 
   return (
-    <div
-      onClick={() => setIsEditing(true)}
-      className={`cursor-pointer ${getStatusColor(hours)}`}
-    >
+    <div onClick={() => setIsEditing(true)} className={`cursor-pointer ${getStatusColor(hours)}`}>
       {hours || '-'}
     </div>
   );
 }
-
-function getStatusColor(hours: number): string {
-  if (hours === 0) return 'text-red-600';
-  if (hours < 8) return 'text-yellow-600';
-  return 'text-green-600';
-} 

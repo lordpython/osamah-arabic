@@ -1,9 +1,18 @@
 'use client';
-
 import { useEffect, useState } from 'react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  CartesianGrid
+} from 'recharts';
+
 import { supabase } from '@/lib/supabase/config';
 import { DailyOrderMetrics, MonthlyOrderMetrics } from '@/types/database';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function OrderMetrics() {
   const [dailyMetrics, setDailyMetrics] = useState<DailyOrderMetrics[]>([]);
@@ -59,23 +68,18 @@ export default function OrderMetrics() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="date" 
-                  tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                  tickFormatter={(date: string) => new Date(date).toLocaleDateString()} 
                 />
                 <YAxis />
                 <Tooltip 
-                  labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                  labelFormatter={(date: string) => new Date(date).toLocaleDateString()} 
                 />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="total_orders" 
-                  stroke="#4F46E5" 
-                  name="Actual Orders"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="orders_target" 
-                  stroke="#EF4444" 
+                <Line type="monotone" dataKey="total_orders" stroke="#4F46E5" name="Actual Orders" />
+                <Line
+                  type="monotone"
+                  dataKey="orders_target"
+                  stroke="#EF4444"
                   name="Target Orders"
                   strokeDasharray="5 5"
                 />
@@ -99,21 +103,16 @@ export default function OrderMetrics() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="month" 
-                  tickFormatter={(month) => `${month}/${monthlyMetrics[0]?.year}`}
+                  tickFormatter={(month: string) => `${month}/${monthlyMetrics[0]?.year}`} 
                 />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="total_orders" 
-                  stroke="#4F46E5" 
-                  name="Actual Orders"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="orders_target" 
-                  stroke="#EF4444" 
+                <Line type="monotone" dataKey="total_orders" stroke="#4F46E5" name="Actual Orders" />
+                <Line
+                  type="monotone"
+                  dataKey="orders_target"
+                  stroke="#EF4444"
                   name="Target Orders"
                   strokeDasharray="5 5"
                 />
@@ -132,14 +131,16 @@ export default function OrderMetrics() {
                   <span className="text-lg font-semibold text-gray-900">
                     {metric.total_orders} / {metric.orders_target}
                   </span>
-                  <span className={`text-sm font-medium ${
-                    metric.achieved_percentage >= 100 ? 'text-green-600' : 'text-yellow-600'
-                  }`}>
+                  <span
+                    className={`text-sm font-medium ${
+                      metric.achieved_percentage >= 100 ? 'text-green-600' : 'text-yellow-600'
+                    }`}
+                  >
                     {metric.achieved_percentage}%
                   </span>
                 </div>
                 <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className={`h-2 rounded-full ${
                       metric.achieved_percentage >= 100 ? 'bg-green-500' : 'bg-yellow-500'
                     }`}
@@ -153,4 +154,4 @@ export default function OrderMetrics() {
       </div>
     </div>
   );
-} 
+}

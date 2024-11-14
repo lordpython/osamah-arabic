@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
 import { supabase } from '@/lib/supabase/config';
 import { Employee } from '@/types/hr';
 
@@ -11,10 +12,7 @@ export default function EmployeeList() {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const { data, error } = await supabase
-          .from('employees')
-          .select('*')
-          .order('created_at', { ascending: false });
+        const { data, error } = await supabase.from('employees').select('*').order('created_at', { ascending: false });
 
         if (error) throw error;
         setEmployees(data || []);
@@ -41,14 +39,10 @@ export default function EmployeeList() {
           if (payload.eventType === 'INSERT') {
             setEmployees((current) => [payload.new as Employee, ...current]);
           } else if (payload.eventType === 'DELETE') {
-            setEmployees((current) =>
-              current.filter((emp) => emp.id !== payload.old.id)
-            );
+            setEmployees((current) => current.filter((emp) => emp.id !== payload.old.id));
           } else if (payload.eventType === 'UPDATE') {
             setEmployees((current) =>
-              current.map((emp) =>
-                emp.id === payload.new.id ? (payload.new as Employee) : emp
-              )
+              current.map((emp) => (emp.id === payload.new.id ? (payload.new as Employee) : emp))
             );
           }
         }
@@ -72,7 +66,10 @@ export default function EmployeeList() {
             <table className="min-w-full divide-y divide-gray-300">
               <thead>
                 <tr>
-                  <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 lg:pl-8">
+                  <th
+                    scope="col"
+                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 lg:pl-8"
+                  >
                     Employee Code
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
@@ -98,18 +95,12 @@ export default function EmployeeList() {
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       {employee.first_name} {employee.last_name}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      {employee.department}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      {employee.position}
-                    </td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{employee.department}</td>
+                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{employee.position}</td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       <span
                         className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                          employee.status === 'active'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
+                          employee.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}
                       >
                         {employee.status}
@@ -124,4 +115,4 @@ export default function EmployeeList() {
       </div>
     </div>
   );
-} 
+}

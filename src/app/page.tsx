@@ -1,9 +1,9 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
-import { useState } from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { useEffect, useState } from 'react';
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 const data = [
   { name: 'يناير', value: 400 },
@@ -21,6 +21,25 @@ const performanceData = [
 ];
 
 const ParticleBackground = () => {
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    setDimensions({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+
+    const handleResize = () => {
+      setDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className="fixed inset-0 -z-10">
       {[...Array(20)].map((_, i) => (
@@ -31,16 +50,16 @@ const ParticleBackground = () => {
             width: '8px',
             height: '8px',
             backgroundColor: 'rgba(99, 102, 241, 0.2)',
-            borderRadius: '50%'
+            borderRadius: '50%',
           }}
           animate={{
-            x: [Math.random() * window.innerWidth, Math.random() * window.innerWidth],
-            y: [Math.random() * window.innerHeight, Math.random() * window.innerHeight],
+            x: [Math.random() * dimensions.width, Math.random() * dimensions.width],
+            y: [Math.random() * dimensions.height, Math.random() * dimensions.height],
           }}
           transition={{
             duration: Math.random() * 10 + 20,
             repeat: Infinity,
-            ease: "linear"
+            ease: 'linear',
           }}
         />
       ))}
@@ -48,7 +67,19 @@ const ParticleBackground = () => {
   );
 };
 
-const StatCard = ({ title, value, icon, trend, percentage }: { title: string; value: string; icon: string; trend?: string; percentage?: string }) => {
+const StatCard = ({
+  title,
+  value,
+  icon,
+  trend,
+  percentage,
+}: {
+  title: string;
+  value: string;
+  icon: string;
+  trend?: string;
+  percentage?: string;
+}) => {
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
@@ -59,22 +90,26 @@ const StatCard = ({ title, value, icon, trend, percentage }: { title: string; va
         background: 'rgba(255, 255, 255, 0.05)',
         backdropFilter: 'blur(16px)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
-        transition: 'all 0.3s'
+        transition: 'all 0.3s',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <span style={{ fontSize: '2.5rem' }}>{icon}</span>
         {trend && percentage && (
-          <div style={{ 
-            color: trend === 'up' ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
-            fontSize: '0.875rem',
-            fontWeight: 'bold'
-          }}>
+          <div
+            style={{
+              color: trend === 'up' ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
+              fontSize: '0.875rem',
+              fontWeight: 'bold',
+            }}
+          >
             {trend === 'up' ? '↑' : '↓'} {percentage}
           </div>
         )}
       </div>
-      <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', marginBottom: '0.5rem', direction: 'rtl' }}>{value}</h3>
+      <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', marginBottom: '0.5rem', direction: 'rtl' }}>
+        {value}
+      </h3>
       <p style={{ color: 'rgb(199, 210, 254)', direction: 'rtl' }}>{title}</p>
     </motion.div>
   );
@@ -86,31 +121,34 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-900 via-indigo-950 to-purple-900 text-white overflow-hidden">
       <ParticleBackground />
-      
+
       <div className="max-w-7xl mx-auto px-4 py-20 relative">
         {/* Hero Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '5rem' }}
         >
-          <motion.div 
+          <motion.div
             whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            transition={{ type: 'spring', stiffness: 300 }}
             style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{
-                width: '5rem',
-                height: '5rem',
-                borderRadius: '1rem',
-                background: 'linear-gradient(to bottom right, rgb(99, 102, 241), rgb(168, 85, 247), rgb(236, 72, 153))',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.25)'
-              }}>
+              <div
+                style={{
+                  width: '5rem',
+                  height: '5rem',
+                  borderRadius: '1rem',
+                  background:
+                    'linear-gradient(to bottom right, rgb(99, 102, 241), rgb(168, 85, 247), rgb(236, 72, 153))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.25)',
+                }}
+              >
                 <span style={{ fontSize: '2.5rem', fontWeight: '900', color: 'white' }}>B</span>
               </div>
               <div style={{ textAlign: 'right' }}>
@@ -120,7 +158,7 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          <motion.h2 
+          <motion.h2
             style={{
               fontSize: '3.75rem',
               fontWeight: 'bold',
@@ -129,21 +167,21 @@ export default function LandingPage() {
               background: 'linear-gradient(to right, rgb(199, 210, 254), rgb(216, 180, 254), rgb(244, 114, 182))',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              direction: 'rtl'
+              direction: 'rtl',
             }}
-            animate={{ 
-              opacity: [0.8, 1]
+            animate={{
+              opacity: [0.8, 1],
             }}
-            transition={{ 
+            transition={{
               duration: 8,
               repeat: Infinity,
-              repeatType: "reverse"
+              repeatType: 'reverse',
             }}
           >
             لوحة التحكم الرئيسية
           </motion.h2>
-          
-          <motion.p 
+
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
@@ -154,7 +192,7 @@ export default function LandingPage() {
               maxWidth: '42rem',
               margin: '0 auto',
               textAlign: 'center',
-              direction: 'rtl'
+              direction: 'rtl',
             }}
           >
             مقاييس الأداء والتحليل في الوقت الفعلي
@@ -162,40 +200,18 @@ export default function LandingPage() {
         </motion.div>
 
         {/* Stats Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '2rem',
-          marginBottom: '5rem'
-        }}>
-          <StatCard 
-            title="السائقين النشطين"
-            value="62"
-            icon="🚗"
-            trend="up"
-            percentage="5%"
-          />
-          <StatCard 
-            title="الإيرادات الشهرية"
-            value="84,500.00 KWD"
-            icon="💰"
-            trend="up"
-            percentage="12%"
-          />
-          <StatCard 
-            title="مستوى الأداء"
-            value="72%"
-            icon="📈"
-            trend="down"
-            percentage="3%"
-          />
-          <StatCard 
-            title="استخدام الأسطول"
-            value="89%"
-            icon="🚚"
-            trend="up"
-            percentage="7%"
-          />
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '2rem',
+            marginBottom: '5rem',
+          }}
+        >
+          <StatCard title="السائقين النشطين" value="62" icon="🚗" trend="up" percentage="5%" />
+          <StatCard title="الإيرادات الشهرية" value="84,500.00 KWD" icon="💰" trend="up" percentage="12%" />
+          <StatCard title="مستوى الأداء" value="72%" icon="📈" trend="down" percentage="3%" />
+          <StatCard title="استخدام الأسطول" value="89%" icon="🚚" trend="up" percentage="7%" />
         </div>
 
         {/* Chart Section */}
@@ -206,35 +222,37 @@ export default function LandingPage() {
             background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(16px)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            marginBottom: '5rem'
+            marginBottom: '5rem',
           }}
-          whileHover={{ boxShadow: "0 0 30px rgba(99, 102, 241, 0.2)" }}
+          whileHover={{ boxShadow: '0 0 30px rgba(99, 102, 241, 0.2)' }}
           onHoverStart={() => setHoveredChart(true)}
           onHoverEnd={() => setHoveredChart(false)}
         >
-          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem', direction: 'rtl' }}>الأداء المالي</h3>
+          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem', direction: 'rtl' }}>
+            الأداء المالي
+          </h3>
           <div style={{ height: '300px', direction: 'ltr' }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data}>
                 <defs>
                   <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="name" stroke="#94a3b8" />
                 <YAxis stroke="#94a3b8" />
-                <Tooltip 
-                  contentStyle={{ 
+                <Tooltip
+                  contentStyle={{
                     backgroundColor: 'rgba(15, 23, 42, 0.9)',
                     border: 'none',
                     borderRadius: '8px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                   }}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="value" 
+                <Area
+                  type="monotone"
+                  dataKey="value"
                   stroke="#6366f1"
                   strokeWidth={2}
                   fill="url(#colorGradient)"
@@ -253,11 +271,15 @@ export default function LandingPage() {
             background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(16px)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            marginBottom: '5rem'
+            marginBottom: '5rem',
           }}
         >
-          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem', direction: 'rtl' }}>توزيع السائقين</h3>
-          <div style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: '1rem', direction: 'rtl' }}>
+          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem', direction: 'rtl' }}>
+            توزيع السائقين
+          </h3>
+          <div
+            style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: '1rem', direction: 'rtl' }}
+          >
             <div style={{ textAlign: 'center', padding: '1rem' }}>
               <div style={{ fontSize: '1.25rem', color: 'rgb(34, 197, 94)' }}>نشط</div>
               <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>45</div>
@@ -294,19 +316,19 @@ export default function LandingPage() {
                 inset: 0,
                 background: 'linear-gradient(to right, rgb(236, 72, 153), rgb(168, 85, 247))',
                 opacity: 0,
-                transition: 'opacity 0.3s'
+                transition: 'opacity 0.3s',
               }}
               initial={false}
               animate={hoveredChart ? { scale: 1.1 } : { scale: 1 }}
             />
             <span style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               استكشف لوحة التحكم
-              <motion.svg 
+              <motion.svg
                 style={{ width: '1.5rem', height: '1.5rem', marginRight: '0.5rem', transform: 'scaleX(-1)' }}
                 animate={{ x: [0, 4, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
-                fill="none" 
-                stroke="currentColor" 
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -327,7 +349,7 @@ export default function LandingPage() {
             height: '100%',
             background: 'linear-gradient(to bottom left, rgba(99, 102, 241, 0.2), transparent)',
             borderRadius: '50%',
-            filter: 'blur(64px)'
+            filter: 'blur(64px)',
           }}
           animate={{
             scale: [1, 1.2, 1],
@@ -336,7 +358,7 @@ export default function LandingPage() {
           transition={{
             duration: 8,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: 'easeInOut',
           }}
         />
         <motion.div
@@ -348,7 +370,7 @@ export default function LandingPage() {
             height: '100%',
             background: 'linear-gradient(to top right, rgba(168, 85, 247, 0.2), transparent)',
             borderRadius: '50%',
-            filter: 'blur(64px)'
+            filter: 'blur(64px)',
           }}
           animate={{
             scale: [1.2, 1, 1.2],
@@ -357,7 +379,7 @@ export default function LandingPage() {
           transition={{
             duration: 8,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: 'easeInOut',
           }}
         />
       </div>

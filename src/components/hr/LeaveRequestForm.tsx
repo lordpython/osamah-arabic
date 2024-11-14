@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+
 import { supabase } from '@/lib/supabase/config';
-import { NewLeaveRequest, Employee } from '@/types/hr';
+import { Employee, NewLeaveRequest } from '@/types/hr';
 
 const leaveTypes = ['annual', 'sick', 'unpaid', 'other'] as const;
 
@@ -26,10 +27,7 @@ export default function LeaveRequestForm({ employees }: LeaveRequestFormProps) {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from('leave_requests')
-        .insert([request])
-        .select();
+      const { data, error } = await supabase.from('leave_requests').insert([request]).select();
 
       if (error) throw error;
 
@@ -85,7 +83,9 @@ export default function LeaveRequestForm({ employees }: LeaveRequestFormProps) {
                 <select
                   id="leave_type"
                   value={request.leave_type}
-                  onChange={(e) => setRequest({ ...request, leave_type: e.target.value as typeof leaveTypes[number] })}
+                  onChange={(e) =>
+                    setRequest({ ...request, leave_type: e.target.value as (typeof leaveTypes)[number] })
+                  }
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 >
                   {leaveTypes.map((type) => (
@@ -158,4 +158,4 @@ export default function LeaveRequestForm({ employees }: LeaveRequestFormProps) {
       </div>
     </form>
   );
-} 
+}

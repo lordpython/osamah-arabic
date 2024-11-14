@@ -93,7 +93,7 @@ a {
 }
 
 .neo-brutalism {
-  box-shadow: 
+  box-shadow:
     0.5rem 0.5rem #000,
     -0.5rem -0.5rem rgba(255, 255, 255, 0.8);
   transition: all 0.2s ease;
@@ -101,13 +101,13 @@ a {
 
 .neo-brutalism:hover {
   transform: translate(-2px, -2px);
-  box-shadow: 
+  box-shadow:
     0.7rem 0.7rem #000,
     -0.7rem -0.7rem rgba(255, 255, 255, 0.8);
 }
 
 .gradient-text {
-  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

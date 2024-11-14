@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import { Attendance } from '@/types/database';
 
 interface ExistingAttendanceTableProps {
@@ -22,22 +23,14 @@ export default function ExistingAttendanceTable({ date, attendanceRecords }: Exi
         <tbody className="divide-y divide-gray-200">
           {attendanceRecords.map((record) => (
             <tr key={record.attendance_id}>
-              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                {record.employee_id}
-              </td>
-              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                {record.check_in}
-              </td>
-              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                {record.check_out}
-              </td>
-              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                {record.status}
-              </td>
+              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">{record.employee_id}</td>
+              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{record.check_in}</td>
+              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{record.check_out}</td>
+              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{record.status}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   );
-} 
+}

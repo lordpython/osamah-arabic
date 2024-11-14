@@ -7,20 +7,13 @@ interface MetricCardProps {
   theme?: 'light' | 'dark';
 }
 
-export default function MetricCard({ 
-  title, 
-  value, 
-  icon, 
-  trend, 
-  format = 'number',
-  theme = 'light' 
-}: MetricCardProps) {
+export default function MetricCard({ title, value, icon, trend, format = 'number', theme = 'light' }: MetricCardProps) {
   const formatValue = (val: number) => {
     switch (format) {
       case 'currency':
-        return new Intl.NumberFormat('en-US', { 
-          style: 'currency', 
-          currency: 'USD' 
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
         }).format(val);
       case 'percentage':
         return `${val}%`;
@@ -47,4 +40,4 @@ export default function MetricCard({
       <p className={`text-2xl font-semibold ${textColor} mt-2`}>{formatValue(value)}</p>
     </div>
   );
-} 
+}
