@@ -3,12 +3,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { accountingOperations } from '@/lib/supabase/config';
-import type { AccountingEntry } from '@/types/database';
+import type { AccountingEntryForm, PaymentMethod, PaymentCategory } from '@/types/database';
 
-type PaymentFormData = Omit<AccountingEntry, 'entry_id' | 'created_at' | 'updated_at'>;
-
-const paymentMethods = ['cash', 'bank', 'other'] as const;
-const categories = [
+const paymentMethods: PaymentMethod[] = ['cash', 'bank', 'other'];
+const categories: PaymentCategory[] = [
   'Salary',
   'Fuel',
   'Maintenance',
@@ -17,9 +15,9 @@ const categories = [
   'Utilities',
   'Rent',
   'Other'
-] as const;
+];
 
-const initialFormData: PaymentFormData = {
+const initialFormData: AccountingEntryForm = {
   date: new Date().toISOString().split('T')[0],
   type: 'payment',
   amount: 0,
@@ -30,14 +28,14 @@ const initialFormData: PaymentFormData = {
 };
 
 export default function PaymentForm() {
-  const [formData, setFormData] = useState<PaymentFormData>(initialFormData);
+  const [formData, setFormData] = useState<AccountingEntryForm>(initialFormData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof PaymentFormData, string>>>({});
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof AccountingEntryForm, string>>>({});
 
   const validateForm = (): boolean => {
-    const errors: Partial<Record<keyof PaymentFormData, string>> = {};
+    const errors: Partial<Record<keyof AccountingEntryForm, string>> = {};
 
     if (!formData.description.trim()) {
       errors.description = 'Description is required';
@@ -84,13 +82,13 @@ export default function PaymentForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev: AccountingEntryForm) => ({
       ...prev,
       [name]: type === 'number' ? Number(value) : value
     }));
     
     // Clear validation error for the field being changed
-    if (formErrors[name as keyof PaymentFormData]) {
+    if (formErrors[name as keyof AccountingEntryForm]) {
       setFormErrors(prev => ({
         ...prev,
         [name]: undefined
