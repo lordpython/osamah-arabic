@@ -46,7 +46,7 @@ export function useSupabaseQuery<T>(
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   return { data, loading, error, refetch: fetchData };
 }

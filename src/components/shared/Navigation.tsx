@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import Image from 'next/image';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -108,10 +109,13 @@ export default function Navigation() {
               </button>
               <div className="h-6 w-px bg-blue-300/30"></div>
               <button className="flex items-center space-x-2 text-blue-100 hover:text-white">
-                <img
+                <Image
                   src="https://ui-avatars.com/api/?name=Admin&background=3949AB&color=fff"
                   alt="Profile"
                   className="w-8 h-8 rounded-full"
+                  width={100}
+                  height={100}
+                  priority={true}
                 />
                 <span className="text-sm font-medium">Admin</span>
               </button>

@@ -1,106 +1,148 @@
 'use client';
 
-import { HTMLMotionProps, motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import AccountingEntries from '@/components/accounting/AccountingEntries';
+import PaymentForm from '@/components/accounting/PaymentForm';
+import CSVImport from '@/components/accounting/CSVImport';
+import { accountingOperations } from '@/lib/supabase/config';
 
 const MotionDiv = motion.div;
 
 export default function AccountingPage() {
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [showCSVImport, setShowCSVImport] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - 1); // Last 30 days
+
+      const { data, error } = await accountingOperations.getEntriesByDateRange(
+        startDate.toISOString(),
+        new Date().toISOString()
+      );
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        throw new Error('No data to export');
+      }
+
+      // Convert data to CSV format
+      const headers = ['Date', 'Type', 'Category', 'Amount', 'Description', 'Payment Method', 'Status'];
+      const csvContent = [
+        headers.join(','),
+        ...data.map(entry => [
+          entry.date,
+          entry.type,
+          entry.category,
+          entry.amount,
+          `"${entry.description.replace(/"/g, '""')}"`,
+          entry.payment_method,
+          entry.status
+        ].join(','))
+      ].join('\n');
+
+      // Create and download the file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `accounting_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Error exporting data:', err);
+      alert(err instanceof Error ? err.message : 'Error exporting data');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-purple-900 p-8">
+    <div className="min-h-screen bg-gray-50 p-8">
       <MotionDiv
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: 'rgb(67, 56, 202)',
-          borderRadius: '1rem',
-          padding: '2rem',
-          marginBottom: '2rem',
-          boxShadow: 'large',
-        }}
+        className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-8 mb-8 shadow-lg"
       >
-        <h1 className="text-3xl font-bold text-white mb-4">Financial Management</h1>
-        <div className="flex space-x-4">
+        <h1 className="text-3xl font-bold text-white mb-6">Financial Management</h1>
+        <div className="flex flex-wrap gap-4">
           <button
-            className={`px-4 py-2 rounded-lg transition-colors duration-200 bg-white text-indigo-700 hover:bg-indigo-100`}
+            onClick={() => {
+              setShowCSVImport(!showCSVImport);
+              setShowPaymentForm(false);
+            }}
+            className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+              showCSVImport 
+                ? 'bg-white text-indigo-700' 
+                : 'bg-indigo-500 text-white hover:bg-indigo-400'
+            }`}
           >
-            Import CSV
+            {showCSVImport ? 'Hide Import' : 'Import CSV'}
           </button>
           <button
-            className={`px-4 py-2 rounded-lg transition-colors duration-200 bg-transparent text-white border border-white hover:bg-white/10`}
+            onClick={() => {
+              setShowPaymentForm(!showPaymentForm);
+              setShowCSVImport(false);
+            }}
+            className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+              showPaymentForm 
+                ? 'bg-white text-indigo-700' 
+                : 'bg-indigo-500 text-white hover:bg-indigo-400'
+            }`}
           >
-            Add Entry
+            {showPaymentForm ? 'Hide Form' : 'Add Entry'}
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className={`px-4 py-2 rounded-lg transition-colors duration-200 
+              bg-transparent text-white border border-white hover:bg-white/10
+              ${exporting ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {exporting ? 'Exporting...' : 'Export Data'}
           </button>
         </div>
       </MotionDiv>
 
-      <div className="bg-white rounded-2xl p-8 shadow-lg">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead>
-              <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Date
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Type
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Description
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Amount
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Category
-                </th>
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">{/* Add your table rows here */}</tbody>
-          </table>
-        </div>
-      </div>
+      {showCSVImport && (
+        <MotionDiv
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-8"
+        >
+          <CSVImport />
+        </MotionDiv>
+      )}
 
-      {/* Export Button */}
-      <div className="mt-8 flex justify-end">
-        <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-          <svg
-            className="-ml-1 mr-2 h-5 w-5"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-            />
-          </svg>
-          Export Data
-        </button>
-      </div>
+      {showPaymentForm && (
+        <MotionDiv
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-8"
+        >
+          <PaymentForm />
+        </MotionDiv>
+      )}
+
+      <MotionDiv
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <AccountingEntries />
+      </MotionDiv>
     </div>
   );
 }

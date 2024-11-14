@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 import { supabase } from '@/lib/supabase/config';
 import { Driver } from '@/types/database';
@@ -12,30 +12,30 @@ export default function AttendanceDataEntry() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    const loadData = async () => {
-      await fetchDrivers();
-      await fetchAttendance();
-    };
-    loadData();
-  }, [selectedDate, fetchDrivers, fetchAttendance]);
-
-  async function fetchDrivers() {
+  const fetchDrivers = useCallback(async () => {
     try {
-      const { data, error } = await supabase.from('drivers').select('*').eq('status', 'active').order('full_name');
-
+      const { data, error } = await supabase.from('drivers').select('*');
       if (error) throw error;
-      setDrivers(data || []);
+      setDrivers(data);
     } catch (error) {
       console.error('Error fetching drivers:', error);
-    } finally {
-      setLoading(false);
     }
-  }
+  }, [supabase]);
 
-  async function fetchAttendance() {
-    // Implementation similar to fetchDrivers
-  }
+  const fetchAttendance = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('attendance').select('*');
+      if (error) throw error;
+      setDrivers(data); // Corrected the function call to setDrivers
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
+    }
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchDrivers();
+    fetchAttendance();
+  }, [fetchDrivers, fetchAttendance]);
 
   const handleBulkUpdate = async (status: 'present' | 'absent' | 'leave') => {
     setSaving(true);

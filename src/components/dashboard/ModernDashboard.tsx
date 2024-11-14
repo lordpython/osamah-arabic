@@ -13,11 +13,13 @@ type MotionDivProps = HTMLMotionProps<'div'> & {
 };
 
 const MotionDiv = motion.div as React.FC<MotionDivProps>;
-
 export default function ModernDashboard() {
-  const { data: metrics } = useSupabaseQuery('dashboard_metrics', async (supabase) => {
+  const { data: _metrics, error: _error } = useSupabaseQuery('metrics', async (supabase) => {
     // Fetch your metrics here
-    return { data: null, error: null };
+    const { data, error } = await supabase
+      .from('metrics')
+      .select('*');
+    return { data, error };
   });
 
   return (

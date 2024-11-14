@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import DriverStatusChart from './DriverStatusChart';

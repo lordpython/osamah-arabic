@@ -1,74 +1,163 @@
-declare module 'recharts' {
-  import { ComponentType, ReactNode } from 'react';
+import { 
+  BarProps, 
+  LineProps, 
+  AreaProps, 
+  PieProps, 
+  RadarProps,
+  ScatterProps
+} from 'recharts';
 
-  export interface LineChartProps {
-    data?: any[];
-    width?: number;
-    height?: number;
-    margin?: { top?: number; right?: number; bottom?: number; left?: number };
-    children?: ReactNode;
-  }
+// Dashboard Chart Types
+export interface DashboardChartData {
+  name: string;
+  value: number;
+  target?: number;
+  percentage?: number;
+}
 
-  export interface BarChartProps extends LineChartProps {
-    barGap?: number;
-    barCategoryGap?: number;
-    maxBarSize?: number;
-  }
+// Performance Chart Types
+export interface DriverPerformanceChartData {
+  date: string;
+  completedOrders: number;
+  targetOrders: number;
+  achievementRate: number;
+}
 
-  export interface BarProps {
-    dataKey: string;
-    fill?: string;
-    name?: string;
-    radius?: number | [number, number, number, number];
-    minPointSize?: number;
-    background?: boolean;
-    stackId?: string;
-  }
+// Financial Chart Types
+export interface ProfitLossChartData {
+  period: string;
+  revenue: number;
+  expenses: number;
+  profit: number;
+}
 
-  export interface ResponsiveContainerProps {
-    width?: string | number;
-    height?: string | number;
-    children?: ReactNode;
-  }
+// Order Metrics Chart Types
+export interface OrderMetricsChartData {
+  period: string;
+  totalOrders: number;
+  completedOrders: number;
+  cancelledOrders: number;
+  achievementRate: number;
+}
 
-  export interface CartesianGridProps {
-    strokeDasharray?: string;
-  }
+// Attendance Chart Types
+export interface AttendanceChartData {
+  date: string;
+  present: number;
+  absent: number;
+  leave: number;
+  total: number;
+}
 
-  export interface XAxisProps {
-    dataKey?: string;
-    tickFormatter?: (value: any) => string;
-  }
+// Growth Chart Types
+export interface GrowthChartData {
+  period: string;
+  growth: number;
+  target: number;
+  percentage: number;
+}
 
-  export interface YAxisProps {
-    dataKey?: string;
-  }
+// Custom Chart Props
+export interface CustomBarChartProps extends BarProps {
+  data: DashboardChartData[];
+  dataKey: string;
+  fill?: string;
+}
 
-  export interface TooltipProps {
-    labelFormatter?: (label: any) => string;
-  }
+export interface CustomLineChartProps extends LineProps {
+  data: DashboardChartData[];
+  dataKey: string;
+  stroke?: string;
+}
 
-  export interface LineProps {
-    type?: 'monotone' | 'linear';
-    dataKey: string;
-    stroke?: string;
-    name?: string;
-    strokeDasharray?: string;
-  }
+export interface CustomAreaChartProps extends AreaProps {
+  data: DashboardChartData[];
+  dataKey: string;
+  fill?: string;
+  stroke?: string;
+}
 
-  export interface LegendProps {
-    align?: 'left' | 'center' | 'right';
-    verticalAlign?: 'top' | 'middle' | 'bottom';
-  }
+export interface CustomPieChartProps extends PieProps {
+  data: DashboardChartData[];
+  dataKey: string;
+  nameKey: string;
+}
 
-  export const LineChart: ComponentType<LineChartProps>;
-  export const BarChart: ComponentType<BarChartProps>;
-  export const ResponsiveContainer: ComponentType<ResponsiveContainerProps>;
-  export const CartesianGrid: ComponentType<CartesianGridProps>;
-  export const XAxis: ComponentType<XAxisProps>;
-  export const YAxis: ComponentType<YAxisProps>;
-  export const Tooltip: ComponentType<TooltipProps>;
-  export const Line: ComponentType<LineProps>;
-  export const Bar: ComponentType<BarProps>;
-  export const Legend: ComponentType<LegendProps>;
-} 
+export interface CustomRadarChartProps extends RadarProps {
+  data: DashboardChartData[];
+  dataKey: string;
+}
+
+export interface CustomScatterChartProps extends ScatterProps {
+  data: DashboardChartData[];
+  dataKey: string;
+}
+
+// Chart Configuration Types
+export interface ChartConfig {
+  type: 'bar' | 'line' | 'area' | 'pie' | 'radar' | 'scatter';
+  dataKey: string;
+  name: string;
+  color?: string;
+  strokeWidth?: number;
+  fillOpacity?: number;
+}
+
+// Dashboard Chart Layout Types
+export interface DashboardChartLayout {
+  id: string;
+  title: string;
+  type: ChartConfig['type'];
+  config: ChartConfig;
+  data: DashboardChartData[];
+  width: number;
+  height: number;
+  gridArea?: string;
+}
+
+// Real-time Chart Update Types
+export interface ChartUpdatePayload {
+  chartId: string;
+  newData: DashboardChartData[];
+}
+
+// Chart Theme Types
+export interface ChartTheme {
+  colors: string[];
+  fontFamily: string;
+  fontSize: number;
+  backgroundColor: string;
+  gridColor: string;
+  tooltipBackground: string;
+  tooltipColor: string;
+}
+
+// Chart Animation Types
+export interface ChartAnimation {
+  duration: number;
+  easing: string;
+  delay: number;
+}
+
+// Chart Legend Types
+export interface ChartLegend {
+  position: 'top' | 'right' | 'bottom' | 'left';
+  align: 'left' | 'center' | 'right';
+  verticalAlign: 'top' | 'middle' | 'bottom';
+}
+
+// Chart Tooltip Types
+export interface ChartTooltip {
+  formatter?: (value: any, name: string) => [string, string];
+  labelFormatter?: (label: string) => string;
+  cursor?: boolean | object;
+}
+
+// Chart Axis Types
+export interface ChartAxis {
+  dataKey: string;
+  type?: 'number' | 'category';
+  domain?: [number | string, number | string];
+  tickFormatter?: (value: any) => string;
+  label?: string | object;
+}
